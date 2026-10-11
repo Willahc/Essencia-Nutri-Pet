@@ -130,15 +130,15 @@ function extractRealDataFromText(fullText: string, fileName: string, defaultSpec
   const extractedResults: ExamParameterResult[] = [];
 
   // 1. Extração de Blocos Bioquímicos (Formato Centro Veterinário Vila Mariana / Vitros e similares)
-  const biochemRegex = /([A-Za-zÀ-ÿ\s\(\)\-\+]+?)\n(?:Material[^\n]*\n)?(?:Metodologia[^\n]*\n)?Refer[eê]ncia\nResultado:\s*([\d,\.]+)\s*\n\s*([\d,\.]+)\s*a\s*([\d,\.]+)\s*([A-Za-z/%µu\u00b5\u207a]+(?:/[A-Za-z0-9]+)?)/gi;
+  const biochemRegex = /([A-Za-zÀ-ÿ\s\(\)\-\+]+?)\n(?:Material[^\n]*\n)?(?:Metodologia[^\n]*\n)?Refer[eê]ncia\nResultado:\s*([\d,\.]+)\s*\n\s*([\d,\.]+)\s*a\s*([\d,\.]+)\s*([A-Za-z/%µu\+\-]+(?:\/[A-Za-z0-9]+)?)/gi;
   let matchBio;
   while ((matchBio = biochemRegex.exec(fullText)) !== null) {
-    const rawName = matchBio[1].replace(/CENTRO\s+VETERIN[AÁ]RIO[^\n]*/gi, "").replace(/Cl[íi]nica:[^\n]*/gi, "").trim();
+    const rawName = (matchBio[1] || "").replace(/CENTRO\s+VETERIN[AÁ]RIO[^\n]*/gi, "").replace(/Cl[íi]nica:[^\n]*/gi, "").trim();
     if (!rawName || rawName.length < 2) continue;
-    const val = parseFloat(matchBio[2].replace(",", "."));
-    const minVal = parseFloat(matchBio[3].replace(",", "."));
-    const maxVal = parseFloat(matchBio[4].replace(",", "."));
-    const unit = matchBio[5].trim();
+    const val = parseFloat((matchBio[2] || "").replace(",", "."));
+    const minVal = parseFloat((matchBio[3] || "").replace(",", "."));
+    const maxVal = parseFloat((matchBio[4] || "").replace(",", "."));
+    const unit = matchBio[5]?.trim() || "unid";
     const isOut = !isNaN(val) && ((!isNaN(minVal) && val < minVal) || (!isNaN(maxVal) && val > maxVal));
 
     if (!extractedResults.some(r => r.parameter.toLowerCase() === rawName.toLowerCase())) {
@@ -148,7 +148,7 @@ function extractRealDataFromText(fullText: string, fileName: string, defaultSpec
         category: "BIOCHEMISTRY",
         value: isNaN(val) ? matchBio[2] : val,
         unit: unit,
-        reference_range: `${matchBio[3]} a ${matchBio[4]} ${unit}`,
+        reference_range: `${matchBio[3] || ""} a ${matchBio[4] || ""} ${unit}`.trim(),
         is_out_of_range: isOut,
         is_uncertain: false,
         confidence_score: 0.98,
@@ -158,13 +158,14 @@ function extractRealDataFromText(fullText: string, fileName: string, defaultSpec
   }
 
   // 2. Extração de Linhas de Hematologia / Eritrograma / Leucograma
-  const hematoRegex = /(Eritr[oó]citos|Hemoglobina|Hemat[oó]crito|V\.?C\.?M\.?|H\.?C\.?M\.?|C\.?H\.?C\.?M\.?|R\.?D\.?W\.?|Prote[íi]na\s+total|Leuc[oó]citos|Contagem\s+plaquet[aá]ria|Plaquetas)[\.\s]*:\s*([\d,\.]+)\s*([A-Za-z/%µu\u00b5\u207a]+(?:/[A-Za-z0-9]+)?)\s+([\d,\.]+\s*a\s*[\d,\.]+\s*[A-Za-z/%µu\u00b5\u207a]*(?:/[A-Za-z0-9]+)?)/gi;
+  const hematoRegex = /(Eritr[oó]citos|Hemoglobina|Hemat[oó]crito|V\.?C\.?M\.?|H\.?C\.?M\.?|C\.?H\.?C\.?M\.?|R\.?D\.?W\.?|Prote[íi]na\s+total|Leuc[oó]citos|Contagem\s+plaquet[aá]ria|Plaquetas)[\.\s]*:\s*([\d,\.]+)\s*([A-Za-z/%µu\+\-]+(?:\/[A-Za-z0-9]+)?)\s+([\d,\.]+\s*a\s*[\d,\.]+\s*[A-Za-z/%µu\+\-]*(?:\/[A-Za-z0-9]+)?)/gi;
   let matchHem;
   while ((matchHem = hematoRegex.exec(fullText)) !== null) {
-    const rawName = matchHem[1].trim();
-    const val = parseFloat(matchHem[2].replace(",", "."));
-    const unit = matchHem[3].trim();
-    const refRange = matchHem[4].trim();
+    const rawName = matchHem[1]?.trim() || "";
+    if (!rawName) continue;
+    const val = parseFloat((matchHem[2] || "").replace(",", "."));
+    const unit = matchHem[3]?.trim() || "unid";
+    const refRange = matchHem[4]?.trim() || "";
 
     const rangeMatch = refRange.match(/([\d,\.]+)\s*a\s*([\d,\.]+)/);
     let isOut = false;
@@ -191,15 +192,16 @@ function extractRealDataFromText(fullText: string, fileName: string, defaultSpec
   }
 
   // 3. Extração de Eletrólitos e Cálcio Ionizado
-  const ionRegex = /(C[aá]lcio\s+ionizado(?:\s+corrigido[^\n\:\.]*)?|S[oó]dio|Pot[aá]ssio|Cloreto|Di[oó]xido\s+de\s+Carbono|Frutosamina|Cobalamina[^\n\:\.]*)\.*:\s*([\d,\.]+)\s*\n?\s*([\d,\.]+\s*a\s*[\d,\.]+)\s*([A-Za-z/%µu\u00b5\u207a]+(?:/[A-Za-z0-9]+)?)/gi;
+  const ionRegex = /(C[aá]lcio\s+ionizado(?:\s+corrigido[^\n\:\.]*)?|S[oó]dio|Pot[aá]ssio|Cloreto|Di[oó]xido\s+de\s+Carbono|Frutosamina|Cobalamina[^\n\:\.]*)\.*:\s*([\d,\.]+)\s*\n?\s*([\d,\.]+)\s*a\s*([\d,\.]+)\s*([A-Za-z/%µu\+\-]+(?:\/[A-Za-z0-9]+)?)/gi;
   let matchIon;
   while ((matchIon = ionRegex.exec(fullText)) !== null) {
-    const rawName = matchIon[1].trim();
-    const val = parseFloat(matchIon[2].replace(",", "."));
-    const minVal = parseFloat(matchIon[3].replace(",", "."));
-    const maxVal = parseFloat(matchIon[4].replace(",", "."));
-    const unit = matchIon[5].trim();
-    const isOut = !isNaN(val) && (val < minVal || val > maxVal);
+    const rawName = matchIon[1]?.trim() || "";
+    if (!rawName) continue;
+    const val = parseFloat((matchIon[2] || "").replace(",", "."));
+    const minVal = parseFloat((matchIon[3] || "").replace(",", "."));
+    const maxVal = parseFloat((matchIon[4] || "").replace(",", "."));
+    const unit = matchIon[5]?.trim() || "unid";
+    const isOut = !isNaN(val) && ((!isNaN(minVal) && val < minVal) || (!isNaN(maxVal) && val > maxVal));
 
     if (!extractedResults.some(r => r.parameter.toLowerCase() === rawName.toLowerCase())) {
       extractedResults.push({
@@ -208,7 +210,7 @@ function extractRealDataFromText(fullText: string, fileName: string, defaultSpec
         category: "BIOCHEMISTRY",
         value: isNaN(val) ? matchIon[2] : val,
         unit: unit,
-        reference_range: `${matchIon[3]} a ${matchIon[4]} ${unit}`,
+        reference_range: `${matchIon[3] || ""} a ${matchIon[4] || ""} ${unit}`.trim(),
         is_out_of_range: isOut,
         is_uncertain: false,
         confidence_score: 0.98,

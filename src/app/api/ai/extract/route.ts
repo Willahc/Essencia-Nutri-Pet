@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
       fileName,
       fileMimeType,
       species,
-      apiKey: process.env.GEMINI_API_KEY,
+      apiKey: process.env.ANTHROPIC_API_KEY,
     });
 
     return NextResponse.json({
