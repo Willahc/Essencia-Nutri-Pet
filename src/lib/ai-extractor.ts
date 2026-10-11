@@ -68,6 +68,12 @@ function parseJsonFromText(rawText: string): any {
   return JSON.parse(cleaned);
 }
 
+function cleanKey(raw?: string): string | undefined {
+  if (!raw) return undefined;
+  const cleaned = raw.trim().replace(/^["']|["']$/g, "").trim();
+  return cleaned.length > 0 ? cleaned : undefined;
+}
+
 /**
  * Função principal para processar o documento de exame
  */
@@ -81,10 +87,10 @@ export async function processExamDocument(params: {
   const { fileBuffer, fileName, fileMimeType, species } = params;
 
   // 1. SUPORTE NATIVO A ANTHROPIC CLAUDE (Prioridade quando ANTHROPIC_API_KEY estiver configurada)
-  const anthropicKey = process.env.ANTHROPIC_API_KEY;
+  const anthropicKey = cleanKey(params.apiKey) || cleanKey(process.env.ANTHROPIC_API_KEY);
   if (anthropicKey) {
     try {
-      const model = process.env.ANTHROPIC_MODEL || "claude-3-5-sonnet-20241022";
+      const model = cleanKey(process.env.ANTHROPIC_MODEL) || "claude-3-5-sonnet-20241022";
       const userContent: any[] = [];
 
       // Se houver buffer do documento (PDF ou Imagem), Claude aceita nativamente em base64
@@ -159,10 +165,10 @@ export async function processExamDocument(params: {
   }
 
   // 2. SUPORTE A OPENROUTER (caso a chave do Claude esteja via OpenRouter)
-  const openRouterKey = process.env.OPENROUTER_API_KEY;
+  const openRouterKey = cleanKey(process.env.OPENROUTER_API_KEY);
   if (openRouterKey) {
     try {
-      const model = process.env.OPENROUTER_MODEL || "anthropic/claude-3.5-sonnet";
+      const model = cleanKey(process.env.OPENROUTER_MODEL) || "anthropic/claude-3.5-sonnet";
       
       const userMessageContent: any[] = [
         {

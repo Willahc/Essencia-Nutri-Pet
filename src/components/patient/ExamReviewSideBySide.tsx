@@ -2,7 +2,21 @@
 
 import React, { useState, useRef } from "react";
 import { ExamDocument, ExamParameterResult, Species } from "@/types";
-import { FileText, AlertTriangle, CheckCircle, ShieldAlert, Sparkles, ExternalLink, Check, Eye, Upload, Loader2, RefreshCw } from "lucide-react";
+import { 
+  FileText, 
+  AlertTriangle, 
+  CheckCircle, 
+  ShieldAlert, 
+  Sparkles, 
+  ExternalLink, 
+  Check, 
+  Eye, 
+  Upload, 
+  Loader2, 
+  Download, 
+  Maximize2, 
+  X 
+} from "lucide-react";
 
 interface ExamReviewSideBySideProps {
   exam: ExamDocument;
@@ -16,6 +30,7 @@ export function ExamReviewSideBySide({ exam, species = "CANINE" }: ExamReviewSid
   const [reviewNotes, setReviewNotes] = useState(exam.professional_review_notes || "");
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [uploadMessage, setUploadMessage] = useState<string>("");
+  const [isFullscreenModalOpen, setIsFullscreenModalOpen] = useState<boolean>(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -42,7 +57,7 @@ export function ExamReviewSideBySide({ exam, species = "CANINE" }: ExamReviewSid
       formData.append("file", file);
       formData.append("species", species);
 
-      setUploadMessage("Executando OCR e Extração Multimodal com IA...");
+      setUploadMessage("Processando com Anthropic Claude 3.5 Sonnet...");
 
       const response = await fetch("/api/ai/extract", {
         method: "POST",
@@ -59,20 +74,22 @@ export function ExamReviewSideBySide({ exam, species = "CANINE" }: ExamReviewSid
         setIsApproved(false);
         setReviewNotes(extracted.preliminary_summary || "");
 
+        const newFileUrl = URL.createObjectURL(file);
+
         setCurrentExam({
           id: `ex-${Date.now()}`,
           patient_id: exam.patient_id,
           laboratory_name: extracted.laboratory_name,
           exam_date: extracted.exam_date,
           file_name: file.name,
-          file_url: URL.createObjectURL(file),
+          file_url: newFileUrl,
           file_hash_sha256: `sha256_${Math.random().toString(36).substring(2, 15)}_${Math.random().toString(36).substring(2, 15)}`,
           extraction_status: "PENDING_REVIEW",
           extracted_results: newResults,
           professional_review_notes: extracted.preliminary_summary,
         });
 
-        setUploadMessage("Extração concluída com sucesso! Revise os parâmetros abaixo.");
+        setUploadMessage("Extração concluída com sucesso! Documento carregado e pronto para revisão.");
       } else {
         alert("Não foi possível processar o laudo: " + (json.error || "Erro desconhecido"));
       }
@@ -81,9 +98,11 @@ export function ExamReviewSideBySide({ exam, species = "CANINE" }: ExamReviewSid
       alert("Erro de conexão ao processar documento.");
     } finally {
       setIsUploading(false);
-      setTimeout(() => setUploadMessage(""), 4000);
+      setTimeout(() => setUploadMessage(""), 5000);
     }
   };
+
+  const isImageFile = currentExam.file_name.match(/\.(jpeg|jpg|png|webp|gif)$/i);
 
   return (
     <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
@@ -99,7 +118,7 @@ export function ExamReviewSideBySide({ exam, species = "CANINE" }: ExamReviewSid
               <span className={`text-[10px] font-semibold px-2.5 py-0.5 rounded-full ${
                 isApproved ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
               }`}>
-                {isApproved ? 'Laudo Aprovado pelo Profissional' : 'Aguardando Validação Humana'}
+                {isApproved ? 'Laudo Homologado pelo Profissional' : 'Aguardando Validação Humana'}
               </span>
             </div>
             <p className="text-xs text-slate-500">
@@ -121,10 +140,10 @@ export function ExamReviewSideBySide({ exam, species = "CANINE" }: ExamReviewSid
             type="button"
             disabled={isUploading}
             onClick={() => fileInputRef.current?.click()}
-            className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold flex items-center space-x-1.5 transition-colors disabled:opacity-50"
+            className="px-3.5 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 rounded-xl text-xs font-bold flex items-center space-x-1.5 transition-colors disabled:opacity-50"
           >
             {isUploading ? <Loader2 className="w-4 h-4 animate-spin text-purple-600" /> : <Upload className="w-4 h-4 text-purple-600" />}
-            <span>{isUploading ? "Processando..." : "Subir Novo Laudo (PDF)"}</span>
+            <span>{isUploading ? "Processando com IA..." : "Subir Novo Laudo (PDF)"}</span>
           </button>
 
           {!isApproved ? (
@@ -155,135 +174,216 @@ export function ExamReviewSideBySide({ exam, species = "CANINE" }: ExamReviewSid
       <div className="bg-blue-50/80 border border-blue-200 rounded-xl p-3.5 mb-6 flex items-start space-x-3">
         <ShieldAlert className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
         <div className="text-xs text-blue-900 leading-relaxed">
-          <span className="font-bold">Princípio Human-in-the-Loop:</span> A Inteligência Artificial transcreve e correlaciona os valores laboratoriais preservando a rastreabilidade do documento original. Parâmetros com baixa nitidez ou unidades fora do padrão recebem destaque de <strong className="text-amber-800">incerteza</strong> para conferência visual obrigatória.
+          <span className="font-bold">Princípio Human-in-the-Loop:</span> O documento original permanece em exibição contínua à esquerda para que você confira visualmente cada parâmetro extraído pelo Claude 3.5 Sonnet. Valores com baixa nitidez ou unidades atípicas recebem marcação de <strong className="text-amber-800">incerteza</strong>.
         </div>
       </div>
 
       {/* Grid Side-by-Side: Documento x Dados Estruturados */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Painel do Documento Original */}
-        <div className="lg:col-span-5 bg-slate-900 rounded-xl p-5 text-slate-300 flex flex-col justify-between">
+        {/* Painel do Documento Original - Visualizador Integrado */}
+        <div className="lg:col-span-5 bg-slate-900 rounded-2xl p-4 text-slate-300 flex flex-col justify-between shadow-inner border border-slate-800">
           <div>
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-3">
               <div className="flex items-center space-x-2">
                 <FileText className="w-4 h-4 text-purple-400" />
-                <span className="text-xs font-semibold text-white">Documento Original Preservado</span>
+                <span className="text-xs font-semibold text-white">Visualizador do Laudo Original</span>
               </div>
-              <span className="text-[10px] text-slate-500 font-mono">Bucket Privado</span>
+              
+              <div className="flex items-center space-x-1.5">
+                <button
+                  type="button"
+                  onClick={() => setIsFullscreenModalOpen(true)}
+                  title="Expandir em tela cheia"
+                  className="p-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
+                >
+                  <Maximize2 className="w-3.5 h-3.5" />
+                </button>
+                <a
+                  href={currentExam.file_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="Abrir PDF em nova aba"
+                  className="p-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+                <a
+                  href={currentExam.file_url}
+                  download={currentExam.file_name}
+                  title="Baixar arquivo do laudo"
+                  className="p-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                </a>
+              </div>
             </div>
 
-            <div className="bg-slate-800/80 rounded-lg p-3.5 border border-slate-700 text-xs space-y-2 mb-4 font-mono">
-              <div>
-                <span className="text-slate-400 block text-[10px]">Arquivo:</span>
-                <span className="text-slate-200 break-all">{currentExam.file_name}</span>
+            <div className="bg-slate-800/80 rounded-xl p-2.5 border border-slate-700 text-[11px] space-y-1 mb-3 font-mono">
+              <div className="flex justify-between">
+                <span className="text-slate-400">Arquivo:</span>
+                <span className="text-slate-200 truncate max-w-[200px]" title={currentExam.file_name}>{currentExam.file_name}</span>
               </div>
-              <div>
-                <span className="text-slate-400 block text-[10px]">Hash SHA-256:</span>
-                <span className="text-emerald-400 text-[10px] break-all">{currentExam.file_hash_sha256}</span>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Integridade:</span>
+                <span className="text-emerald-400 text-[10px]">{currentExam.file_hash_sha256.slice(0, 18)}...</span>
               </div>
             </div>
 
-            <div className="border border-slate-800 bg-slate-950/60 rounded-xl p-6 text-center">
-              <Eye className="w-8 h-8 text-slate-600 mx-auto mb-2" />
-              <p className="text-xs text-slate-400">Visualizador PDF Integrado</p>
-              <p className="text-[10px] text-slate-600 mt-1">Bucket Privado • URL Pré-assinada de 15 minutos</p>
-              <button 
-                type="button"
-                className="mt-4 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-medium inline-flex items-center space-x-1 transition-colors"
-                onClick={() => alert(`Visualização segura do documento: ${currentExam.file_name}`)}
-              >
-                <span>Visualizar Laudo</span>
-                <ExternalLink className="w-3 h-3 ml-1" />
-              </button>
+            {/* Container do Documento (Iframe para PDF ou Imagem) */}
+            <div className="w-full h-[520px] rounded-xl overflow-hidden border border-slate-800 bg-white relative shadow-inner">
+              {isImageFile ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={currentExam.file_url}
+                  alt="Laudo do Exame"
+                  className="w-full h-full object-contain bg-slate-950 p-2"
+                />
+              ) : (
+                <iframe
+                  src={`${currentExam.file_url}#toolbar=1&navpanes=0&view=FitH`}
+                  className="w-full h-full border-0 bg-white"
+                  title="Visualizador de Laudo PDF"
+                />
+              )}
             </div>
           </div>
 
-          <div className="text-[11px] text-slate-500 mt-4 pt-3 border-t border-slate-800">
-            Laboratório: {currentExam.laboratory_name}
+          <div className="text-[11px] text-slate-400 mt-3 pt-2 border-t border-slate-800 flex items-center justify-between">
+            <span>Laboratório: {currentExam.laboratory_name.split(" ")[0]}</span>
+            <a 
+              href={currentExam.file_url} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-purple-400 hover:underline flex items-center"
+            >
+              <span>Abrir tela cheia</span>
+              <ExternalLink className="w-3 h-3 ml-1" />
+            </a>
           </div>
         </div>
 
         {/* Tabela de Parâmetros Extraídos */}
-        <div className="lg:col-span-7">
-          <div className="border border-slate-200 rounded-xl overflow-hidden shadow-2xs">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-[10px] tracking-wider">
-                <tr>
-                  <th className="px-4 py-3 font-semibold">Marcador / Parâmetro</th>
-                  <th className="px-4 py-3 font-semibold text-right">Resultado</th>
-                  <th className="px-4 py-3 font-semibold text-center">Referência</th>
-                  <th className="px-4 py-3 font-semibold text-center">Status / IA</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 text-slate-700">
-                {results.map((item) => (
-                  <tr key={item.id} className={item.is_uncertain ? "bg-amber-50/40" : "hover:bg-slate-50/50"}>
-                    <td className="px-4 py-3 font-medium text-slate-900">
-                      <div className="flex items-center space-x-1.5">
-                        <span>{item.parameter}</span>
-                        {item.page_number && (
-                          <span className="text-[9px] text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded font-mono">
-                            pág {item.page_number}
+        <div className="lg:col-span-7 flex flex-col justify-between">
+          <div>
+            <div className="border border-slate-200 rounded-xl overflow-hidden shadow-2xs mb-4">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-[10px] tracking-wider">
+                  <tr>
+                    <th className="px-4 py-3 font-semibold">Marcador / Parâmetro</th>
+                    <th className="px-4 py-3 font-semibold text-right">Resultado</th>
+                    <th className="px-4 py-3 font-semibold text-center">Referência</th>
+                    <th className="px-4 py-3 font-semibold text-center">Status / IA</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-slate-700">
+                  {results.map((item) => (
+                    <tr key={item.id} className={item.is_uncertain ? "bg-amber-50/50" : "hover:bg-slate-50/50"}>
+                      <td className="px-4 py-3 font-medium text-slate-900">
+                        <div className="flex items-center space-x-1.5">
+                          <span>{item.parameter}</span>
+                          {item.page_number && (
+                            <span className="text-[9px] text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded font-mono">
+                              pág {item.page_number}
+                            </span>
+                          )}
+                        </div>
+                        {item.is_uncertain && item.uncertainty_reason && (
+                          <p className="text-[10px] text-amber-700 font-normal mt-0.5 flex items-center">
+                            <AlertTriangle className="w-3 h-3 mr-1 text-amber-600 shrink-0" />
+                            {item.uncertainty_reason}
+                          </p>
+                        )}
+                      </td>
+
+                      <td className="px-4 py-3 text-right">
+                        <span className={`font-bold ${
+                          item.is_out_of_range ? 'text-rose-600' : 'text-slate-800'
+                        }`}>
+                          {item.value} {item.unit}
+                        </span>
+                      </td>
+
+                      <td className="px-4 py-3 text-center text-slate-500 text-[11px] font-mono">
+                        {item.reference_range} {item.unit}
+                      </td>
+
+                      <td className="px-4 py-3 text-center">
+                        {item.is_uncertain ? (
+                          <span className="inline-flex items-center text-[10px] font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-0.5 rounded-full">
+                            <AlertTriangle className="w-3 h-3 mr-1" />
+                            Verificar
+                          </span>
+                        ) : item.is_out_of_range ? (
+                          <span className="inline-flex items-center text-[10px] font-semibold text-rose-700 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-full">
+                            Alterado
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
+                            Normal
                           </span>
                         )}
-                      </div>
-                      {item.is_uncertain && item.uncertainty_reason && (
-                        <p className="text-[10px] text-amber-700 font-normal mt-0.5 flex items-center">
-                          <AlertTriangle className="w-3 h-3 mr-1 text-amber-600 shrink-0" />
-                          {item.uncertainty_reason}
-                        </p>
-                      )}
-                    </td>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
-                    <td className="px-4 py-3 text-right">
-                      <span className={`font-bold ${
-                        item.is_out_of_range ? 'text-rose-600' : 'text-slate-800'
-                      }`}>
-                        {item.value} {item.unit}
-                      </span>
-                    </td>
-
-                    <td className="px-4 py-3 text-center text-slate-500 text-[11px] font-mono">
-                      {item.reference_range} {item.unit}
-                    </td>
-
-                    <td className="px-4 py-3 text-center">
-                      {item.is_uncertain ? (
-                        <span className="inline-flex items-center text-[10px] font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-0.5 rounded-full">
-                          <AlertTriangle className="w-3 h-3 mr-1" />
-                          Verificar
-                        </span>
-                      ) : item.is_out_of_range ? (
-                        <span className="inline-flex items-center text-[10px] font-semibold text-rose-700 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-full">
-                          Alterado
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
-                          Normal
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Parecer do Profissional */}
-          <div className="mt-4">
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-              Parecer Preliminar / Conduta do Zootecnista / Nutrólogo
-            </label>
-            <textarea
-              rows={2}
-              value={reviewNotes}
-              onChange={(e) => setReviewNotes(e.target.value)}
-              placeholder="Descreva a interpretação dos biomarcadores para o manejo nutricional..."
-              className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white"
-            />
+            {/* Parecer do Profissional */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                Parecer Preliminar / Conduta do Zootecnista / Nutrólogo
+              </label>
+              <textarea
+                rows={3}
+                value={reviewNotes}
+                onChange={(e) => setReviewNotes(e.target.value)}
+                placeholder="Descreva a interpretação dos biomarcadores para o manejo nutricional..."
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white"
+              />
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Modal de Tela Cheia do Documento */}
+      {isFullscreenModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-xs p-4">
+          <div className="bg-slate-900 rounded-3xl w-full max-w-5xl h-[90vh] flex flex-col shadow-2xl overflow-hidden border border-slate-800">
+            <div className="px-6 py-4 bg-slate-900 border-b border-slate-800 flex items-center justify-between text-white">
+              <div className="flex items-center space-x-3">
+                <FileText className="w-5 h-5 text-purple-400" />
+                <span className="font-bold text-sm">{currentExam.file_name}</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <a
+                  href={currentExam.file_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-semibold flex items-center space-x-1.5"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  <span>Abrir em Nova Aba</span>
+                </a>
+                <button
+                  onClick={() => setIsFullscreenModalOpen(false)}
+                  className="p-1.5 text-slate-400 hover:text-white rounded-lg"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            <div className="flex-1 bg-white p-1">
+              <iframe
+                src={currentExam.file_url}
+                className="w-full h-full border-0"
+                title="Laudo em Tela Cheia"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
