@@ -178,3 +178,25 @@ export interface NutritionPlan {
   approved_at: string;
   notes?: string;
 }
+
+export type StoolScore = 1 | 2 | 3 | 4 | 5;
+
+export type AppetiteLevel = 'VORACIOUS' | 'NORMAL' | 'RELUCTANT' | 'REFUSED';
+
+export interface TutorDailyLog {
+  id: string;
+  patient_id: string;
+  date: string; // YYYY-MM-DD
+  transition_day: number; // Dia no plano de transição (1, 2, 3...)
+  diet_consumed_percentage: number; // 0 a 100
+  water_intake_ml: number;
+  stool_score: StoolScore;
+  stool_notes?: string;
+  appetite: AppetiteLevel;
+  vomiting_episodes: number;
+  supplements_taken: boolean;
+  treats_given: boolean;
+  notes?: string;
+  created_at: string;
+}
+

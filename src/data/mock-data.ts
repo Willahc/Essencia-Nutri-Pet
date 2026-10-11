@@ -1,4 +1,4 @@
-import { Patient, Tutor, MeasurementRecord, AppointmentRecord, ExamDocument, NutritionPlan } from "@/types";
+import { Patient, Tutor, MeasurementRecord, AppointmentRecord, ExamDocument, NutritionPlan, TutorDailyLog } from "@/types";
 
 export const MOCK_TUTORS: Tutor[] = [
   {
@@ -502,4 +502,88 @@ export const MOCK_NUTRITION_PLANS: NutritionPlan[] = [
   MOCK_NUTRITION_PLAN,
   MOCK_NUTRITION_PLAN_RAPOSO,
 ];
+
+export const MOCK_DAILY_LOGS: TutorDailyLog[] = [
+  {
+    id: "log-k1",
+    patient_id: "pat-1",
+    date: "2026-09-20",
+    transition_day: 1,
+    diet_consumed_percentage: 100,
+    water_intake_ml: 710,
+    stool_score: 2,
+    stool_notes: "Fezes bem formadas, sem resíduos ao recolher.",
+    appetite: "NORMAL",
+    vomiting_episodes: 0,
+    supplements_taken: true,
+    treats_given: false,
+    notes: "Kate comeu todo o prato com bastante entusiasmo.",
+    created_at: "2026-09-20T20:30:00Z"
+  },
+  {
+    id: "log-k2",
+    patient_id: "pat-1",
+    date: "2026-09-21",
+    transition_day: 2,
+    diet_consumed_percentage: 100,
+    water_intake_ml: 730,
+    stool_score: 2,
+    stool_notes: "Consistência firme e coloração normal.",
+    appetite: "NORMAL",
+    vomiting_episodes: 0,
+    supplements_taken: true,
+    treats_given: false,
+    notes: "Adaptação excelente aos ingredientes cozidos.",
+    created_at: "2026-09-21T20:15:00Z"
+  },
+  {
+    id: "log-k3",
+    patient_id: "pat-1",
+    date: "2026-09-22",
+    transition_day: 3,
+    diet_consumed_percentage: 100,
+    water_intake_ml: 750,
+    stool_score: 2,
+    stool_notes: "Padrão ouro mantido.",
+    appetite: "NORMAL",
+    vomiting_episodes: 0,
+    supplements_taken: true,
+    treats_given: false,
+    notes: "Tudo tranquilo, muita disposição nos passeios.",
+    created_at: "2026-09-22T21:00:00Z"
+  },
+  {
+    id: "log-r1",
+    patient_id: "pat-2",
+    date: "2026-09-23",
+    transition_day: 1,
+    diet_consumed_percentage: 90,
+    water_intake_ml: 240,
+    stool_score: 2,
+    stool_notes: "Fezes firmes, formato adequado.",
+    appetite: "NORMAL",
+    vomiting_episodes: 0,
+    supplements_taken: true,
+    treats_given: false,
+    notes: "Raposo lambeu o prato do frango com tilápia. Tomou bastante água na fonte.",
+    created_at: "2026-09-23T20:45:00Z"
+  },
+  {
+    id: "log-r2",
+    patient_id: "pat-2",
+    date: "2026-09-24",
+    transition_day: 2,
+    diet_consumed_percentage: 100,
+    water_intake_ml: 260,
+    stool_score: 2,
+    stool_notes: "Sem alterações, consistência ideal.",
+    appetite: "NORMAL",
+    vomiting_episodes: 0,
+    supplements_taken: true,
+    treats_given: false,
+    notes: "Aceitou muito bem a suplementação de cálcio e taurina misturada na refeição morna.",
+    created_at: "2026-09-24T20:00:00Z"
+  }
+];
+
 

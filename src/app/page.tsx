@@ -17,6 +17,7 @@ import {
   MOCK_MEASUREMENTS, 
   MOCK_APPOINTMENTS, 
   MOCK_NUTRITION_PLANS, 
+  MOCK_DAILY_LOGS,
   MOCK_EXAM,
   MOCK_EXAM_RAPOSO 
 } from "@/data/mock-data";
@@ -31,7 +32,8 @@ import {
   Species,
   Sex,
   ExamDocument,
-  NutritionPlan
+  NutritionPlan,
+  TutorDailyLog
 } from "@/types";
 import { Activity, Calculator, Utensils, FileText, PlusCircle, Printer, Eye, User, Sparkles, UserPlus } from "lucide-react";
 
@@ -47,6 +49,7 @@ export default function Home() {
   const [appointments, setAppointments] = useState<AppointmentRecord[]>(MOCK_APPOINTMENTS);
   const [exams, setExams] = useState<ExamDocument[]>([MOCK_EXAM, MOCK_EXAM_RAPOSO]);
   const [plans, setPlans] = useState<NutritionPlan[]>(MOCK_NUTRITION_PLANS);
+  const [dailyLogs, setDailyLogs] = useState<TutorDailyLog[]>(MOCK_DAILY_LOGS);
 
   // Modais
   const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState<boolean>(false);
@@ -72,6 +75,7 @@ export default function Home() {
   const tutor = tutors.find((t) => t.id === patient.tutor_id) || tutors[0];
   const patientMeasurements = measurements.filter((m) => m.patient_id === patient.id);
   const patientAppointments = appointments.filter((a) => a.patient_id === patient.id);
+  const patientDailyLogs = dailyLogs.filter((l) => l.patient_id === patient.id);
   const currentPatientExam = exams.find((e) => e.patient_id === patient.id) || {
     id: `ex-${patient.id}`,
     patient_id: patient.id,
@@ -122,6 +126,10 @@ export default function Home() {
       }
       return [savedPlan, ...prev];
     });
+  };
+
+  const handleSaveDailyLog = (newLog: TutorDailyLog) => {
+    setDailyLogs((prev) => [newLog, ...prev]);
   };
 
   const handleSaveAppointment = (newApt: AppointmentRecord, newMeas: MeasurementRecord) => {
@@ -335,7 +343,9 @@ export default function Home() {
             tutor={tutor}
             plan={currentPatientPlan}
             measurements={patientMeasurements}
+            logs={patientDailyLogs}
             onOpenReport={() => setIsReportModalOpen(true)}
+            onSaveDailyLog={handleSaveDailyLog}
           />
         ) : (
           /* MODO PROFISSIONAL (B2B) */
@@ -426,6 +436,7 @@ export default function Home() {
                 <TimelineEvolution 
                   appointments={patientAppointments} 
                   measurements={patientMeasurements} 
+                  dailyLogs={patientDailyLogs}
                 />
               )}
 
