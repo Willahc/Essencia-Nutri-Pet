@@ -1,237 +1,137 @@
+// Prisma Schema for Essência Nutri Pet
+// Relational persistence for longitudinal patient tracking, exams, diets, and tutor adherence
+
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
-enum Role {
-  TUTOR
-  PROFESSIONAL
-  CLINIC_ADMIN
-  SYSTEM_ADMIN
-}
-
-enum Species {
-  CANINE
-  FELINE
-}
-
-enum Sex {
-  MALE
-  FEMALE
-}
-
-enum AppointmentType {
-  CONSULTA
-  CONSULTORIA_NUTRICIONAL
-  RETORNO
-  REAVALIACAO_NUTRICIONAL
-}
-
-enum AppointmentStatus {
-  RASCUNHO
-  EM_REVISAO
-  FINALIZADO
-}
-
-enum FeedingType {
-  NATURAL_COOKED
-  NATURAL_RAW_BONES
-  COMMERCIAL_DRY
-  COMMERCIAL_WET
-  MIXED_FEEDING
-}
-
-enum ExtractionStatus {
-  PROCESSING
-  PENDING_REVIEW
-  REVIEWED_APPROVED
-  REJECTED
-}
-
-model User {
-  id            String    @id @default(uuid())
-  name          String
-  email         String    @unique
-  passwordHash  String?
-  role          Role      @default(PROFESSIONAL)
-  phone         String?
-  crzCrmv       String?   // Ex.: CRZ 4821 ou CRMV-SP 12345
-  clinicName    String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  patientsAsProf  Patient[]        @relation("ProfessionalPatients")
-  tutorProfile    TutorProfile?
-  auditLogs       AuditLog[]
-}
-
-model TutorProfile {
-  id          String   @id @default(uuid())
-  userId      String   @unique
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  address     String?
-  city        String?
-  state       String?
-  notes       String?
-  createdAt   DateTime @default(now())
-
-  patients    Patient[]
+model Tutor {
+  id        String    @id @default(uuid())
+  name      String
+  email     String?
+  phone     String?
+  city      String?
+  state     String?
+  notes     String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  patients  Patient[]
 }
 
 model Patient {
-  id                 String    @id @default(uuid())
-  tutorId            String
-  tutor              TutorProfile @relation(fields: [tutorId], references: [id], onDelete: Cascade)
-  professionalId     String
-  professional       User      @relation("ProfessionalPatients", fields: [professionalId], references: [id])
-  name               String
-  species            Species
-  breed              String
-  birthDate          DateTime
-  sex                Sex
-  isNeutered         Boolean   @default(false)
-  idealWeightKg      Decimal   @db.Decimal(5, 2)
-  currentWeightKg    Decimal   @db.Decimal(5, 2)
-  currentBcs         Int       @default(5) // 1 a 9
-  avatarUrl          String?
-  microchip          String?
-  allergies          String[]  @default([])
-  comorbidities      String[]  @default([])
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
-
-  measurements       Measurement[]
-  appointments       Appointment[]
-  nutritionPlans     NutritionPlan[]
-  examDocuments      ExamDocument[]
+  id              String          @id @default(uuid())
+  tutorId         String
+  tutor           Tutor           @relation(fields: [tutorId], references: [id], onDelete: Cascade)
+  name            String
+  species         String          // CANINE | FELINE
+  breed           String
+  birthDate       String?
+  sex             String          // MALE | FEMALE
+  isNeutered      Boolean         @default(true)
+  idealWeightKg   Float
+  currentWeightKg Float
+  currentBcs      Int             @default(5)
+  avatarUrl       String?
+  comorbidities   String?         // JSON array string
+  allergies       String?         // JSON array string
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  measurements    Measurement[]
+  appointments    Appointment[]
+  plans           NutritionPlan[]
+  dailyLogs       TutorDailyLog[]
+  exams           ExamDocument[]
 }
 
 model Measurement {
-  id                          String    @id @default(uuid())
-  patientId                   String
-  patient                     Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  appointmentId               String?
-  appointment                 Appointment? @relation(fields: [appointmentId], references: [id])
-  date                        DateTime  @default(now())
-  weightKg                    Decimal   @db.Decimal(5, 2)
-  bcs                         Int       // 1 a 9
-  abdominalCircumferenceCm   Decimal?  @db.Decimal(5, 2)
-  thoracicCircumferenceCm    Decimal?  @db.Decimal(5, 2)
-  measuredBy                  String
-  notes                       String?
-  createdAt                   DateTime  @default(now())
+  id                       String   @id @default(uuid())
+  patientId                String
+  patient                  Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  date                     String
+  weightKg                 Float
+  bcs                      Int
+  abdominalCircumferenceCm Float?
+  thoracicCircumferenceCm  Float?
+  measuredBy               String?
+  notes                    String?
+  createdAt                DateTime @default(now())
 }
 
 model Appointment {
-  id                  String             @id @default(uuid())
-  patientId           String
-  patient             Patient            @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  professionalId      String
-  type                AppointmentType    @default(CONSULTORIA_NUTRICIONAL)
-  status              AppointmentStatus  @default(FINALIZADO)
-  occurredAt          DateTime           @default(now())
-  version             Int                @default(1)
-  notes               String
-  anamnesisJson       Json               // apetite, fezes, emese, petiscos, água
-  dietRecommendation  String?
-  createdAt           DateTime           @default(now())
-
-  measurements        Measurement[]
-  versions            AppointmentVersion[]
-  examDocuments       ExamDocument[]
-}
-
-model AppointmentVersion {
-  id             String       @id @default(uuid())
-  appointmentId  String
-  appointment    Appointment  @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
-  version        Int
-  contentJson    Json
-  authorId       String
-  reason         String?
-  createdAt      DateTime     @default(now())
-
-  @@unique([appointmentId, version])
+  id                 String   @id @default(uuid())
+  patientId          String
+  patient            Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  professionalId     String
+  professionalName   String
+  type               String   // CONSULTORIA_NUTRICIONAL | RETORNO | etc
+  status             String   @default("FINALIZADO")
+  occurredAt         String
+  version            Int      @default(1)
+  notes              String?
+  anamnesisJson      String?  // JSON string
+  dietRecommendation String?
+  createdAt          DateTime @default(now())
 }
 
 model NutritionPlan {
-  id                    String              @id @default(uuid())
-  patientId             String
-  patient               Patient             @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  version               Int                 @default(1)
-  title                 String
-  feedingType           FeedingType         @default(NATURAL_COOKED)
-  dailyEnergyKcal       Int
-  mealsPerDay           Int                 @default(2)
-  hydrationTargetMlDay  Int
-  transitionPlanDays    Int                 @default(7)
-  professionalId        String
-  isActive              Boolean             @default(true)
-  approvedAt            DateTime?
-  notes                 String?
-  createdAt             DateTime            @default(now())
-
-  items                 NutritionPlanItem[]
-  supplements           String[]            @default([])
+  id                   String   @id @default(uuid())
+  patientId            String
+  patient              Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  version              Int      @default(1)
+  title                String
+  feedingType          String   // NATURAL_COOKED | COMMERCIAL_DRY | MIXED_FEEDING
+  dailyEnergyKcal      Int
+  mealsPerDay          Int      @default(2)
+  hydrationTargetMlDay Int
+  transitionPlanDays   Int      @default(7)
+  professionalId       String
+  isActive             Boolean  @default(true)
+  approvedAt           String
+  notes                String?
+  itemsJson            String   // JSON string of NutritionPlanItem[]
+  supplementsJson      String   // JSON string of string[]
+  createdAt            DateTime @default(now())
 }
 
-model NutritionPlanItem {
-  id              String        @id @default(uuid())
-  planId          String
-  plan            NutritionPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
-  ingredientName  String
-  quantityGrams   Decimal       @db.Decimal(6, 1)
-  notes           String?
+model TutorDailyLog {
+  id                     String   @id @default(uuid())
+  patientId              String
+  patient                Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  date                   String
+  transitionDay          Int
+  dietConsumedPercentage Int      @default(100)
+  waterIntakeMl          Int
+  stoolScore             Int      @default(2)
+  stoolNotes             String?
+  appetite               String   @default("NORMAL")
+  vomitingEpisodes       Int      @default(0)
+  supplementsTaken       Boolean  @default(true)
+  treatsGiven            Boolean  @default(false)
+  notes                  String?
+  createdAt              DateTime @default(now())
 }
 
 model ExamDocument {
-  id                      String            @id @default(uuid())
-  patientId               String
-  patient                 Patient           @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  appointmentId           String?
-  appointment             Appointment?      @relation(fields: [appointmentId], references: [id])
-  laboratoryName          String
-  examDate                DateTime
-  fileName                String
-  fileUrl                 String
-  fileHashSha256          String
-  extractionStatus        ExtractionStatus  @default(PENDING_REVIEW)
-  professionalReviewNotes String?
-  reviewedAt              DateTime?
-  reviewedBy              String?
-  createdAt               DateTime          @default(now())
-
-  extractedResults        ExamParameterResult[]
-}
-
-model ExamParameterResult {
-  id                String       @id @default(uuid())
-  examDocumentId    String
-  examDocument      ExamDocument @relation(fields: [examDocumentId], references: [id], onDelete: Cascade)
-  parameter         String
-  category          String       // HEMATOLOGY, BIOCHEMISTRY, etc.
-  value             Decimal      @db.Decimal(8, 2)
-  unit              String
-  referenceRange    String
-  isOutOfRange      Boolean      @default(false)
-  isUncertain       Boolean      @default(false)
-  uncertaintyReason String?
-  confidenceScore   Decimal      @db.Decimal(4, 2)
-  pageNumber        Int?
-}
-
-model AuditLog {
-  id           String    @id @default(uuid())
-  userId       String?
-  user         User?     @relation(fields: [userId], references: [id])
-  action       String    // CREATE_APPOINTMENT, APPROVE_EXAM, UPDATE_DIET...
-  resourceType String
-  resourceId   String
-  ipAddress    String?
-  userAgent    String?
-  createdAt    DateTime  @default(now())
+  id                   String   @id @default(uuid())
+  patientId            String
+  patient              Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  appointmentId        String?
+  laboratoryName       String
+  examDate             String
+  fileName             String
+  fileUrl              String
+  fileHashSha256       String?
+  extractionStatus     String   @default("PENDING_REVIEW")
+  extractedResultsJson String   // JSON string of ExamParameterResult[]
+  patientDetectedJson  String?  // JSON string
+  tutorDetectedJson    String?  // JSON string
+  professionalNotes    String?
+  reviewedAt           String?
+  reviewedBy           String?
+  createdAt            DateTime @default(now())
 }

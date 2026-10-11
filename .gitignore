@@ -50,3 +50,9 @@ coverage/
 
 # Turborepo / Cache
 .turbo/
+
+# SQLite Database
+*.db
+*.db-journal
+prisma/*.db
+prisma/*.db-journal

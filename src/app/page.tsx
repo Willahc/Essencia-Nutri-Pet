@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Header } from "@/components/layout/Header";
 import { PatientHeader } from "@/components/patient/PatientHeader";
 import { NutritionalCalculator } from "@/components/patient/NutritionalCalculator";
@@ -50,6 +50,151 @@ export default function Home() {
   const [exams, setExams] = useState<ExamDocument[]>([MOCK_EXAM, MOCK_EXAM_RAPOSO]);
   const [plans, setPlans] = useState<NutritionPlan[]>(MOCK_NUTRITION_PLANS);
   const [dailyLogs, setDailyLogs] = useState<TutorDailyLog[]>(MOCK_DAILY_LOGS);
+
+  // Carrega dados persistidos do SQLite/Prisma na inicialização
+  useEffect(() => {
+    async function loadInitialData() {
+      try {
+        const res = await fetch("/api/patients");
+        const json = await res.json();
+        if (json.success && json.data && json.data.length > 0) {
+          const loadedPatients: Patient[] = json.data.map((p: any) => ({
+            id: p.id,
+            tutor_id: p.tutorId,
+            name: p.name,
+            species: p.species,
+            breed: p.breed,
+            birth_date: p.birthDate,
+            sex: p.sex,
+            is_neutered: p.isNeutered,
+            ideal_weight_kg: p.idealWeightKg,
+            current_weight_kg: p.currentWeightKg,
+            current_bcs: p.currentBcs,
+            avatar_url: p.avatarUrl,
+            comorbidities: p.comorbidities || [],
+            allergies: p.allergies || [],
+            created_at: p.createdAt,
+          }));
+
+          const loadedTutors: Tutor[] = json.data
+            .map((p: any) => p.tutor)
+            .filter(Boolean)
+            .map((t: any) => ({
+              id: t.id,
+              name: t.name,
+              email: t.email || "",
+              phone: t.phone || "",
+              city: t.city,
+              state: t.state,
+              notes: t.notes,
+              created_at: t.createdAt,
+            }));
+
+          const loadedMeasurements: MeasurementRecord[] = json.data.flatMap((p: any) =>
+            (p.measurements || []).map((m: any) => ({
+              id: m.id,
+              patient_id: m.patientId,
+              date: m.date,
+              weight_kg: m.weightKg,
+              bcs: m.bcs,
+              abdominal_circumference_cm: m.abdominalCircumferenceCm,
+              thoracic_circumference_cm: m.thoracicCircumferenceCm,
+              measured_by: m.measuredBy,
+              notes: m.notes,
+            }))
+          );
+
+          const loadedAppointments: AppointmentRecord[] = json.data.flatMap((p: any) =>
+            (p.appointments || []).map((a: any) => ({
+              id: a.id,
+              patient_id: a.patientId,
+              professional_id: a.professionalId,
+              professional_name: a.professionalName,
+              type: a.type,
+              status: a.status,
+              occurred_at: a.occurredAt,
+              version: a.version,
+              notes: a.notes,
+              anamnesis: a.anamnesis || {},
+              diet_recommendation: a.dietRecommendation,
+              created_at: a.createdAt,
+            }))
+          );
+
+          const loadedPlans: NutritionPlan[] = json.data.flatMap((p: any) =>
+            (p.plans || []).map((pl: any) => ({
+              id: pl.id,
+              patient_id: pl.patientId,
+              version: pl.version,
+              title: pl.title,
+              feeding_type: pl.feedingType,
+              daily_energy_kcal: pl.dailyEnergyKcal,
+              meals_per_day: pl.mealsPerDay,
+              hydration_target_ml_day: pl.hydrationTargetMlDay,
+              transition_plan_days: pl.transitionPlanDays,
+              professional_id: pl.professionalId,
+              is_active: pl.isActive,
+              approved_at: pl.approvedAt,
+              notes: pl.notes,
+              items: pl.items || [],
+              supplements: pl.supplements || [],
+            }))
+          );
+
+          const loadedDailyLogs: TutorDailyLog[] = json.data.flatMap((p: any) =>
+            (p.dailyLogs || []).map((dl: any) => ({
+              id: dl.id,
+              patient_id: dl.patientId,
+              date: dl.date,
+              transition_day: dl.transitionDay,
+              diet_consumed_percentage: dl.dietConsumedPercentage,
+              water_intake_ml: dl.waterIntakeMl,
+              stool_score: dl.stoolScore,
+              stool_notes: dl.stoolNotes,
+              appetite: dl.appetite,
+              vomiting_episodes: dl.vomitingEpisodes,
+              supplements_taken: dl.supplementsTaken,
+              treats_given: dl.treatsGiven,
+              notes: dl.notes,
+              created_at: dl.createdAt,
+            }))
+          );
+
+          const loadedExams: ExamDocument[] = json.data.flatMap((p: any) =>
+            (p.exams || []).map((ex: any) => ({
+              id: ex.id,
+              patient_id: ex.patientId,
+              appointment_id: ex.appointmentId,
+              laboratory_name: ex.laboratoryName,
+              exam_date: ex.examDate,
+              file_name: ex.fileName,
+              file_url: ex.fileUrl,
+              file_hash_sha256: ex.fileHashSha256,
+              extraction_status: ex.extractionStatus,
+              extracted_results: ex.extracted_results || [],
+              patient_detected: ex.patient_detected,
+              tutor_detected: ex.tutor_detected,
+              professional_review_notes: ex.professionalNotes,
+              reviewed_at: ex.reviewedAt,
+              reviewed_by: ex.reviewedBy,
+            }))
+          );
+
+          if (loadedPatients.length > 0) setPatients(loadedPatients);
+          if (loadedTutors.length > 0) setTutors(loadedTutors);
+          if (loadedMeasurements.length > 0) setMeasurements(loadedMeasurements);
+          if (loadedAppointments.length > 0) setAppointments(loadedAppointments);
+          if (loadedPlans.length > 0) setPlans(loadedPlans);
+          if (loadedDailyLogs.length > 0) setDailyLogs(loadedDailyLogs);
+          if (loadedExams.length > 0) setExams(loadedExams);
+        }
+      } catch (err) {
+        console.warn("Utilizando estado de contingência em memória:", err);
+      }
+    }
+
+    loadInitialData();
+  }, []);
 
   // Modais
   const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState<boolean>(false);
@@ -126,10 +271,22 @@ export default function Home() {
       }
       return [savedPlan, ...prev];
     });
+
+    fetch("/api/plans", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(savedPlan),
+    }).catch((err) => console.warn("Erro ao sincronizar plano no banco:", err));
   };
 
   const handleSaveDailyLog = (newLog: TutorDailyLog) => {
     setDailyLogs((prev) => [newLog, ...prev]);
+
+    fetch("/api/daily-logs", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newLog),
+    }).catch((err) => console.warn("Erro ao sincronizar diário no banco:", err));
   };
 
   const handleSaveAppointment = (newApt: AppointmentRecord, newMeas: MeasurementRecord) => {
@@ -148,6 +305,18 @@ export default function Home() {
           : p
       )
     );
+
+    fetch("/api/appointments", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...newApt,
+        weight_kg: newMeas.weight_kg,
+        bcs: newMeas.bcs,
+        abdominal_circumference_cm: newMeas.abdominal_circumference_cm,
+        thoracic_circumference_cm: newMeas.thoracic_circumference_cm,
+      }),
+    }).catch((err) => console.warn("Erro ao sincronizar atendimento no banco:", err));
   };
 
   const handlePatientDetected = (extracted: ExamExtractionResponse, fileUrl: string, fileName: string) => {
@@ -177,6 +346,12 @@ export default function Home() {
       }
       return [savedExam, ...prev];
     });
+
+    fetch("/api/exams", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(savedExam),
+    }).catch((err) => console.warn("Erro ao sincronizar exame no banco:", err));
   };
 
   const handleConfirmPreRegistration = (data: {
@@ -272,6 +447,22 @@ export default function Home() {
     setPatients((prev) => [newPatient, ...prev]);
     setMeasurements((prev) => [...prev, newMeasurement]);
     setAppointments((prev) => [newAppointment, ...prev]);
+
+    fetch("/api/patients", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: data.name,
+        species: data.species,
+        breed: data.breed,
+        birth_date: newPatient.birth_date,
+        sex: data.sex,
+        is_neutered: data.is_neutered,
+        ideal_weight_kg: data.ideal_weight_kg,
+        current_weight_kg: data.current_weight_kg,
+        tutor_name: data.tutorName,
+      }),
+    }).catch((err) => console.warn("Erro ao sincronizar novo paciente no banco:", err));
 
     // Seleciona o novo paciente imediatamente!
     setSelectedPatientId(newPatientId);
