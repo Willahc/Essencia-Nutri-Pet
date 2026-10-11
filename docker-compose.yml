@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: essencia_nutri_pet_app
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://nutripet_user:nutripet_secure_pass@db:5432/nutripet_db
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET:-sua_chave_secreta_aqui}
+      - NEXTAUTH_URL=${NEXTAUTH_URL:-http://localhost:3000}
+    depends_on:
+      - db
+    networks:
+      - nutripet_network
+
+  db:
+    image: postgres:16-alpine
+    container_name: essencia_nutri_pet_db
+    restart: always
+    environment:
+      - POSTGRES_USER=nutripet_user
+      - POSTGRES_PASSWORD=nutripet_secure_pass
+      - POSTGRES_DB=nutripet_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - nutripet_network
+
+networks:
+  nutripet_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
