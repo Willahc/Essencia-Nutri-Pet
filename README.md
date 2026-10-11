@@ -58,12 +58,71 @@ Frontend Web & PWA (Next.js 15 + TypeScript + Tailwind CSS + Shadcn UI)
 
 ---
 
-## 🗺️ Roadmap de Desenvolvimento
+## 🚀 Status da Versão 1.0 (Produção Ativa)
 
-- [ ] **Fase 1: Fundação & Domínio** (Autenticação RBAC, RLS, estrutura base de usuários, tutores e pacientes).
-- [ ] **Fase 2: Prontuário Longitudinal & Planos** (Os 4 atendimentos: consulta, consultoria, retorno e reavaliação; curvas de peso/ECC; versionamento de planos).
-- [ ] **Fase 3: Pipeline de Exames com IA** (Upload seguro, OCR/LLM estruturado, marcação de incertezas e conferência lado a lado).
-- [ ] **Fase 4: Portal do Tutor & Relatórios** (Área do tutor com dietas ativas, metas, lembretes e relatórios evolutivos).
+A plataforma encontra-se **operacional e implantada em ambiente de produção na Hostinger VPS**:
+- **Acesso Web:** `http://187.127.253.42:8080`
+- **Infraestrutura:** Next.js 15 Standalone + Nginx Reverse Proxy + Docker Compose + Prisma ORM (SQLite).
+- **Isolamento de Servidor:** Coexistência pacífica com sistemas legados da VPS sem conflitos de portas.
+- **Dossiê Estratégico & Proposta:** [`Essencia_Nutri_Pet_Proposta_e_Roadmap.pdf`](Essencia_Nutri_Pet_Proposta_e_Roadmap.pdf) (7 páginas diagramadas).
+
+---
+
+## 🔬 Módulos Implementados & Validados
+
+1. **Formulador & Prescritor de Cardápios NRC 2006:**
+   - Equações de Kleiber para Necessidade Energética Basal e de Manutenção (NEM).
+   - Balanceamento rígido da relação Cálcio:Fósforo (Ca:P 1.2:1 a 1.4:1).
+   - Blindagem e alerta obrigatório de Taurina para felinos.
+   - Cálculo de ácidos graxos essenciais Ômega-3 (EPA e DHA).
+   - Exportação em 1 clique para WhatsApp e impressão em receituário limpo.
+
+2. **Leitor Inteligente de Laudos por IA (Claude 3.5 Sonnet):**
+   - Pipeline Python (`pypdf`) e LLM multimodal para extração de parâmetros laboratoriais.
+   - Detecção automática de alterações bioquímicas (ureia, creatinina, enzimas hepáticas) e cruzamento com restrições alimentares.
+
+3. **Portal do Tutor & Diário de Adesão Alimentar:**
+   - Cronograma de transição alimentar gradual de 7 a 14 dias (25%, 50%, 75%, 100%).
+   - Escala visual de fezes Waltham/Bristol (Escores 1 a 5).
+   - Registro de sintomas (vômito, prurido) e notas diárias de apetite.
+
+4. **Prontuário Longitudinal & Persistência Relacional:**
+   - Prisma ORM 6.19.3 com 7 modelos de dados relacionais.
+   - Banco de dados populado com pacientes clínicos reais (Kate e Raposo Tavares).
+
+---
+
+## 🛠️ Como Executar Localmente
+
+```bash
+# Instalar dependências
+npm install
+
+# Inicializar banco de dados SQLite
+npx prisma db push
+npx tsx prisma/seed.ts
+
+# Iniciar servidor de desenvolvimento
+npm run dev
+```
+
+Acesse em: `http://localhost:3000`
+
+---
+
+## 🐳 Como Executar em Produção (VPS Hostinger)
+
+Consulte o guia completo em [`HOSTINGER_DEPLOY_GUIDE.md`](HOSTINGER_DEPLOY_GUIDE.md) ou execute:
+
+```bash
+# Clone e entrada no repositório
+git clone https://github.com/Willahc/Essencia-Nutri-Pet.git
+cd Essencia-Nutri-Pet
+
+# Execução do script automatizado
+chmod +x deploy.sh
+sudo ./deploy.sh
+```
 
 ---
 
