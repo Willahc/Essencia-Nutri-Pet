@@ -31,9 +31,9 @@ docker compose up -d
 
 # 4. Sincroniza o banco de dados e executa o seed dos pacientes iniciais
 echo "🌱 Sincronizando schema do banco de dados (Prisma)..."
-sleep 5
-docker compose exec -T app npx prisma db push --accept-data-loss || true
-docker compose exec -T app npx tsx prisma/seed.ts || true
+sleep 3
+docker compose exec -T app npx --yes prisma@6.19.3 db push --accept-data-loss || true
+docker compose exec -T app npx --yes tsx prisma/seed.ts || true
 
 echo "=========================================================="
 echo "🎉 DEPLOY CONCLUÍDO COM SUCESSO!"
