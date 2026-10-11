@@ -118,7 +118,7 @@ export const MOCK_APPOINTMENTS: AppointmentRecord[] = [
     notes: "Avaliação bioquímica detalhada: ureia 58 mg/dL e creatinina 3,40 mg/dL com fósforo sérico de 6,30 mg/dL. Recomendado plano dietético com restrição controlada de fósforo e alta digestibilidade proteica.",
     anamnesis: {
       reported_appetite: "NORMAL",
-      water_intake: "INCREASED",
+      water_intake: "POLYURIA_POLYDIPSIA",
       stool_consistency: "NORMAL",
       vomiting_episodes_per_week: 0,
       treats_habits: "Estímulo à ingestão hídrica com fontes de água corrente e patês reidratados.",
@@ -458,7 +458,7 @@ export const MOCK_NUTRITION_PLAN: NutritionPlan = {
   supplements: [
     "Suplemento vitamínico e mineral completo para cães adultos",
     "Ômega 3 (EPA + DHA 500mg) - 1 cápsula a cada 24h",
-    "Carbonato de Cálcio (fonte de cálcio balanceada 1.2:1 com fósforo)"
+    "Carbonato de Cálcio 1.8g ao dia (balanceador Ca:P 1.2:1 com o fósforo das carnes)"
   ],
   items: [
     { ingredient_name: "Peito de frango cozido desfiado", quantity_grams: 180, notes: "Proteína magra de alta digestibilidade" },
@@ -468,3 +468,38 @@ export const MOCK_NUTRITION_PLAN: NutritionPlan = {
     { ingredient_name: "Azeite de oliva extravirgem", quantity_grams: 4, notes: "Ácidos graxos monoinsaturados" }
   ]
 };
+
+export const MOCK_NUTRITION_PLAN_RAPOSO: NutritionPlan = {
+  id: "plan-2",
+  patient_id: "pat-2",
+  version: 1,
+  title: "Protocolo Nutricional para Suporte e Proteção Renal Felina",
+  feeding_type: "NATURAL_COOKED",
+  daily_energy_kcal: 220, // RER * 1.1 para felino idoso/renal de 4.8kg
+  meals_per_day: 3,
+  is_active: true,
+  hydration_target_ml_day: 250,
+  transition_plan_days: 10,
+  professional_id: "pro-2",
+  approved_at: "2026-09-22T15:00:00Z",
+  notes: "Foco na restrição de fósforo sérico (6.30 mg/dL), alta umidade alimentar e preservação de massa magra.",
+  supplements: [
+    "Carbonato de Cálcio Micronizado 1.1g ao dia misturado na carne (balanceador Ca:P e quelante intestinal de fósforo)",
+    "Taurina 500mg ao dia (aminoácido essencial para manutenção miocárdica e retiniana felina)",
+    "Ômega 3 de alta concentração (EPA/DHA 250mg) - ação anti-inflamatória glomerular",
+    "Suplemento vitamínico e mineral quelatado específico para felinos renais (isento de fósforo)"
+  ],
+  items: [
+    { ingredient_name: "Peito de frango cozido desfiado", quantity_grams: 75, notes: "Proteína nobre de baixo resíduo e excelente digestibilidade" },
+    { ingredient_name: "Filé de tilápia cozido no vapor", quantity_grams: 35, notes: "Proteína leve com perfil lipídico favorável e baixo fósforo" },
+    { ingredient_name: "Arroz branco cozido", quantity_grams: 30, notes: "Fonte limpa de energia com baixíssimo fósforo vegetal" },
+    { ingredient_name: "Abóbora cabotiá cozida", quantity_grams: 25, notes: "Fibra solúvel para redução de toxinas urêmicas entéricas" },
+    { ingredient_name: "Azeite de oliva extravirgem", quantity_grams: 2, notes: "Aporte de ácidos graxos monoinsaturados e densidade calórica" }
+  ]
+};
+
+export const MOCK_NUTRITION_PLANS: NutritionPlan[] = [
+  MOCK_NUTRITION_PLAN,
+  MOCK_NUTRITION_PLAN_RAPOSO,
+];
+

@@ -16,7 +16,7 @@ import {
   MOCK_TUTORS, 
   MOCK_MEASUREMENTS, 
   MOCK_APPOINTMENTS, 
-  MOCK_NUTRITION_PLAN, 
+  MOCK_NUTRITION_PLANS, 
   MOCK_EXAM,
   MOCK_EXAM_RAPOSO 
 } from "@/data/mock-data";
@@ -30,7 +30,8 @@ import {
   ExamExtractionResponse,
   Species,
   Sex,
-  ExamDocument 
+  ExamDocument,
+  NutritionPlan
 } from "@/types";
 import { Activity, Calculator, Utensils, FileText, PlusCircle, Printer, Eye, User, Sparkles, UserPlus } from "lucide-react";
 
@@ -45,6 +46,7 @@ export default function Home() {
   const [measurements, setMeasurements] = useState<MeasurementRecord[]>(MOCK_MEASUREMENTS);
   const [appointments, setAppointments] = useState<AppointmentRecord[]>(MOCK_APPOINTMENTS);
   const [exams, setExams] = useState<ExamDocument[]>([MOCK_EXAM, MOCK_EXAM_RAPOSO]);
+  const [plans, setPlans] = useState<NutritionPlan[]>(MOCK_NUTRITION_PLANS);
 
   // Modais
   const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState<boolean>(false);
@@ -81,6 +83,45 @@ export default function Home() {
     extraction_status: "PENDING_REVIEW" as const,
     extracted_results: [],
     professional_review_notes: "Aguardando envio de laudo para este paciente.",
+  };
+
+  const currentPatientPlan = plans.find((p) => p.patient_id === patient.id) || {
+    id: `plan-${patient.id}`,
+    patient_id: patient.id,
+    version: 1,
+    title: `Plano Nutricional Balanceado - ${patient.name}`,
+    feeding_type: "NATURAL_COOKED" as const,
+    daily_energy_kcal: Math.round(70 * Math.pow(patient.current_weight_kg || 10, 0.75) * (patient.species === 'CANINE' ? 1.4 : 1.2)),
+    meals_per_day: patient.species === 'CANINE' ? 2 : 3,
+    is_active: true,
+    hydration_target_ml_day: Math.round(patient.current_weight_kg * 50),
+    transition_plan_days: 7,
+    professional_id: "pro-1",
+    approved_at: new Date().toISOString(),
+    notes: "Plano formulado conforme diretrizes NRC (2006) e WSAVA.",
+    supplements: [
+      "Suplemento vitamínico e mineral completo",
+      `Ômega 3 (EPA + DHA ${Math.round(patient.current_weight_kg * 40)}mg/dia)`,
+      "Carbonato de Cálcio 1.0g/100g de carne (balanceador Ca:P)"
+    ],
+    items: [
+      { ingredient_name: "Peito de frango cozido desfiado", quantity_grams: 140, notes: "Proteína magra de alta digestibilidade" },
+      { ingredient_name: "Arroz branco cozido", quantity_grams: 90, notes: "Carboidrato de fácil digestão" },
+      { ingredient_name: "Abóbora moranga cozida", quantity_grams: 60, notes: "Fibra solúvel para saúde digestiva" },
+      { ingredient_name: "Azeite de oliva extravirgem", quantity_grams: 3, notes: "Ácidos graxos monoinsaturados" }
+    ]
+  };
+
+  const handleSavePlan = (savedPlan: NutritionPlan) => {
+    setPlans((prev) => {
+      const idx = prev.findIndex((p) => p.patient_id === savedPlan.patient_id);
+      if (idx >= 0) {
+        const copy = [...prev];
+        copy[idx] = savedPlan;
+        return copy;
+      }
+      return [savedPlan, ...prev];
+    });
   };
 
   const handleSaveAppointment = (newApt: AppointmentRecord, newMeas: MeasurementRecord) => {
@@ -292,7 +333,7 @@ export default function Home() {
           <TutorPortalView
             patient={patient}
             tutor={tutor}
-            plan={MOCK_NUTRITION_PLAN}
+            plan={currentPatientPlan}
             measurements={patientMeasurements}
             onOpenReport={() => setIsReportModalOpen(true)}
           />
@@ -396,7 +437,11 @@ export default function Home() {
 
               {activeTab === "DIET" && (
                 <DietPlanViewer 
-                  plan={MOCK_NUTRITION_PLAN} 
+                  key={`${patient.id}-${currentPatientPlan.version}`}
+                  plan={currentPatientPlan} 
+                  patient={patient}
+                  tutor={tutor}
+                  onSavePlan={handleSavePlan}
                 />
               )}
 
@@ -430,7 +475,7 @@ export default function Home() {
         tutor={tutor}
         appointments={patientAppointments}
         measurements={patientMeasurements}
-        plan={MOCK_NUTRITION_PLAN}
+        plan={currentPatientPlan}
         exam={currentPatientExam}
       />
 

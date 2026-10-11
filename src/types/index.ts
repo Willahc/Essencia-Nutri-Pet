@@ -151,9 +151,13 @@ export interface ExamDocument {
   reviewed_by?: string;
 }
 
+export type IngredientCategory = 'PROTEIN' | 'CARBOHYDRATE' | 'VEGETABLE' | 'ORGAN' | 'FAT' | 'COMMERCIAL_FEED' | 'SUPPLEMENT';
+
 export interface NutritionPlanItem {
   ingredient_name: string;
   quantity_grams: number;
+  category?: IngredientCategory;
+  kcal_per_100g?: number;
   notes?: string;
 }
 
