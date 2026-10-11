@@ -10,6 +10,7 @@ import { ExamReviewSideBySide } from "@/components/patient/ExamReviewSideBySide"
 import { TutorPortalView } from "@/components/tutor/TutorPortalView";
 import { NewAppointmentModal } from "@/components/patient/NewAppointmentModal";
 import { EvolutionReportModal } from "@/components/reports/EvolutionReportModal";
+import { DetectedPatientModal } from "@/components/patient/DetectedPatientModal";
 import { 
   MOCK_PATIENTS, 
   MOCK_TUTORS, 
@@ -18,8 +19,18 @@ import {
   MOCK_NUTRITION_PLAN, 
   MOCK_EXAM 
 } from "@/data/mock-data";
-import { AppointmentRecord, MeasurementRecord, Patient } from "@/types";
-import { Activity, Calculator, Utensils, FileText, PlusCircle, Printer, Eye, User, Sparkles } from "lucide-react";
+import { 
+  AppointmentRecord, 
+  MeasurementRecord, 
+  Patient, 
+  Tutor, 
+  DetectedPatientInfo, 
+  DetectedTutorInfo, 
+  ExamExtractionResponse,
+  Species,
+  Sex 
+} from "@/types";
+import { Activity, Calculator, Utensils, FileText, PlusCircle, Printer, Eye, User, Sparkles, UserPlus } from "lucide-react";
 
 export default function Home() {
   const [viewMode, setViewMode] = useState<"PROFESSIONAL" | "TUTOR">("PROFESSIONAL");
@@ -27,6 +38,7 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<"EVOLUTION" | "CALCULATOR" | "DIET" | "EXAMS">("EVOLUTION");
 
   // Estados locais para persistência em memória durante a sessão
+  const [tutors, setTutors] = useState<Tutor[]>(MOCK_TUTORS);
   const [patients, setPatients] = useState<Patient[]>(MOCK_PATIENTS);
   const [measurements, setMeasurements] = useState<MeasurementRecord[]>(MOCK_MEASUREMENTS);
   const [appointments, setAppointments] = useState<AppointmentRecord[]>(MOCK_APPOINTMENTS);
@@ -34,9 +46,18 @@ export default function Home() {
   // Modais
   const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState<boolean>(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState<boolean>(false);
+  const [isDetectedModalOpen, setIsDetectedModalOpen] = useState<boolean>(false);
+
+  // Dados do paciente detectado pelo laudo
+  const [detectedData, setDetectedData] = useState<{
+    patient: DetectedPatientInfo;
+    tutor?: DetectedTutorInfo;
+    lab: string;
+    date: string;
+  } | null>(null);
 
   const patient = patients.find((p) => p.id === selectedPatientId) || patients[0];
-  const tutor = MOCK_TUTORS.find((t) => t.id === patient.tutor_id) || MOCK_TUTORS[0];
+  const tutor = tutors.find((t) => t.id === patient.tutor_id) || tutors[0];
   const patientMeasurements = measurements.filter((m) => m.patient_id === patient.id);
   const patientAppointments = appointments.filter((a) => a.patient_id === patient.id);
 
@@ -56,6 +77,97 @@ export default function Home() {
           : p
       )
     );
+  };
+
+  const handlePatientDetected = (extracted: ExamExtractionResponse) => {
+    if (extracted.patient_detected) {
+      setDetectedData({
+        patient: extracted.patient_detected,
+        tutor: extracted.tutor_detected,
+        lab: extracted.laboratory_name,
+        date: extracted.exam_date,
+      });
+      setIsDetectedModalOpen(true);
+    }
+  };
+
+  const handleConfirmPreRegistration = (data: {
+    name: string;
+    species: Species;
+    breed: string;
+    sex: Sex;
+    is_neutered: boolean;
+    current_weight_kg: number;
+    ideal_weight_kg: number;
+    tutorName: string;
+  }) => {
+    const newTutorId = `tut-${Date.now()}`;
+    const newPatientId = `pat-${Date.now()}`;
+    const nowIso = new Date().toISOString();
+
+    const newTutor: Tutor = {
+      id: newTutorId,
+      name: data.tutorName,
+      email: "tutor@email.com",
+      phone: "(11) 99999-8888",
+      created_at: nowIso,
+    };
+
+    const newPatient: Patient = {
+      id: newPatientId,
+      tutor_id: newTutorId,
+      name: data.name,
+      species: data.species,
+      breed: data.breed,
+      birth_date: new Date(Date.now() - 3 * 365 * 24 * 3600 * 1000).toISOString().split("T")[0],
+      sex: data.sex,
+      is_neutered: data.is_neutered,
+      ideal_weight_kg: data.ideal_weight_kg,
+      current_weight_kg: data.current_weight_kg,
+      current_bcs: 5,
+      avatar_url: data.species === "CANINE" ? "🐕" : "🐈",
+      created_at: nowIso,
+    };
+
+    const newMeasurement: MeasurementRecord = {
+      id: `m-${Date.now()}`,
+      patient_id: newPatientId,
+      date: nowIso.split("T")[0],
+      weight_kg: data.current_weight_kg,
+      bcs: 5,
+      measured_by: "Dr. Roberto Almeida (CRZ 4821)",
+      notes: `Cadastro inicial gerado a partir do laudo do laboratório ${detectedData?.lab || "BioVet"}.`,
+    };
+
+    const newAppointment: AppointmentRecord = {
+      id: `apt-${Date.now()}`,
+      patient_id: newPatientId,
+      professional_id: "pro-1",
+      professional_name: "Dr. Roberto Almeida (CRZ 4821)",
+      type: "CONSULTORIA_NUTRICIONAL",
+      status: "FINALIZADO",
+      occurred_at: nowIso,
+      version: 1,
+      notes: `Primeiro atendimento iniciado via importação de laudo laboratorial. Animal: ${data.name} (${data.breed}).`,
+      anamnesis: {
+        reported_appetite: "NORMAL",
+        water_intake: "NORMAL",
+        stool_consistency: "NORMAL",
+        vomiting_episodes_per_week: 0,
+        treats_habits: "Em fase de anamnese e transição alimentar.",
+      },
+      diet_recommendation: "Avaliação laboratorial em andamento. Início de planejamento dietético personalizado.",
+      created_at: nowIso,
+    };
+
+    setTutors((prev) => [newTutor, ...prev]);
+    setPatients((prev) => [newPatient, ...prev]);
+    setMeasurements((prev) => [...prev, newMeasurement]);
+    setAppointments((prev) => [newAppointment, ...prev]);
+
+    // Seleciona o novo paciente imediatamente!
+    setSelectedPatientId(newPatientId);
+    setActiveTab("EXAMS");
   };
 
   return (
@@ -98,12 +210,12 @@ export default function Home() {
           {/* Seletor de Paciente */}
           <div className="flex items-center space-x-2">
             <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Paciente:</span>
-            <div className="inline-flex bg-slate-100 p-1 rounded-xl border border-slate-200">
+            <div className="inline-flex bg-slate-100 p-1 rounded-xl border border-slate-200 overflow-x-auto max-w-md">
               {patients.map((p) => (
                 <button
                   key={p.id}
                   onClick={() => setSelectedPatientId(p.id)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
                     selectedPatientId === p.id
                       ? "bg-white text-slate-900 shadow-2xs"
                       : "text-slate-600 hover:text-slate-900"
@@ -233,6 +345,7 @@ export default function Home() {
                 <ExamReviewSideBySide 
                   exam={MOCK_EXAM} 
                   species={patient.species}
+                  onPatientDetected={handlePatientDetected}
                 />
               )}
             </div>
@@ -259,6 +372,19 @@ export default function Home() {
         plan={MOCK_NUTRITION_PLAN}
         exam={MOCK_EXAM}
       />
+
+      {/* Modal de Pré-Cadastro de Paciente Detectado via Exame */}
+      {detectedData && (
+        <DetectedPatientModal
+          isOpen={isDetectedModalOpen}
+          onClose={() => setIsDetectedModalOpen(false)}
+          detectedPatient={detectedData.patient}
+          detectedTutor={detectedData.tutor}
+          laboratoryName={detectedData.lab}
+          examDate={detectedData.date}
+          onConfirm={handleConfirmPreRegistration}
+        />
+      )}
 
       {/* Rodapé Institucional */}
       <footer className="border-t border-slate-200 bg-white py-6 mt-12 text-center text-xs text-slate-500">

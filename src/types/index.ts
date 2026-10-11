@@ -106,6 +106,33 @@ export interface ExamParameterResult {
   page_number?: number;
 }
 
+export interface DetectedPatientInfo {
+  name: string;
+  species: Species;
+  breed: string;
+  sex: Sex;
+  is_neutered: boolean;
+  approx_age?: string;
+  weight_kg?: number;
+}
+
+export interface DetectedTutorInfo {
+  name: string;
+  phone?: string;
+  email?: string;
+}
+
+export interface ExamExtractionResponse {
+  laboratory_name: string;
+  exam_date: string;
+  patient_detected?: DetectedPatientInfo;
+  tutor_detected?: DetectedTutorInfo;
+  extracted_results: ExamParameterResult[];
+  preliminary_summary: string;
+  confidence_overall: number;
+  api_notice?: string;
+}
+
 export interface ExamDocument {
   id: string;
   patient_id: string;
@@ -117,6 +144,8 @@ export interface ExamDocument {
   file_hash_sha256: string;
   extraction_status: 'PROCESSING' | 'PENDING_REVIEW' | 'REVIEWED_APPROVED' | 'REJECTED';
   extracted_results: ExamParameterResult[];
+  patient_detected?: DetectedPatientInfo;
+  tutor_detected?: DetectedTutorInfo;
   professional_review_notes?: string;
   reviewed_at?: string;
   reviewed_by?: string;

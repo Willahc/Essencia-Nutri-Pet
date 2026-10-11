@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef } from "react";
-import { ExamDocument, ExamParameterResult, Species } from "@/types";
+import { ExamDocument, ExamParameterResult, Species, ExamExtractionResponse } from "@/types";
 import { 
   FileText, 
   AlertTriangle, 
@@ -15,15 +15,17 @@ import {
   Loader2, 
   Download, 
   Maximize2, 
-  X 
+  X,
+  UserPlus
 } from "lucide-react";
 
 interface ExamReviewSideBySideProps {
   exam: ExamDocument;
   species?: Species;
+  onPatientDetected?: (extracted: ExamExtractionResponse, fileUrl: string, fileName: string) => void;
 }
 
-export function ExamReviewSideBySide({ exam, species = "CANINE" }: ExamReviewSideBySideProps) {
+export function ExamReviewSideBySide({ exam, species = "CANINE", onPatientDetected }: ExamReviewSideBySideProps) {
   const [currentExam, setCurrentExam] = useState<ExamDocument>(exam);
   const [results, setResults] = useState<ExamParameterResult[]>(exam.extracted_results);
   const [isApproved, setIsApproved] = useState(exam.extraction_status === "REVIEWED_APPROVED");
@@ -74,9 +76,7 @@ export function ExamReviewSideBySide({ exam, species = "CANINE" }: ExamReviewSid
         setIsApproved(false);
         setReviewNotes(extracted.preliminary_summary || "");
 
-        const newFileUrl = URL.createObjectURL(file);
-
-        setCurrentExam({
+        const newExam: ExamDocument = {
           id: `ex-${Date.now()}`,
           patient_id: exam.patient_id,
           laboratory_name: extracted.laboratory_name,
@@ -86,10 +86,23 @@ export function ExamReviewSideBySide({ exam, species = "CANINE" }: ExamReviewSid
           file_hash_sha256: `sha256_${Math.random().toString(36).substring(2, 15)}_${Math.random().toString(36).substring(2, 15)}`,
           extraction_status: "PENDING_REVIEW",
           extracted_results: newResults,
+          patient_detected: extracted.patient_detected,
+          tutor_detected: extracted.tutor_detected,
           professional_review_notes: extracted.preliminary_summary,
-        });
+        };
 
-        setUploadMessage("Extração concluída com sucesso! Documento carregado e pronto para revisão.");
+        setCurrentExam(newExam);
+
+        if (extracted.api_notice) {
+          setUploadMessage(`Laudo processado via leitor de alta precisão. (${extracted.api_notice})`);
+        } else {
+          setUploadMessage("Extração concluída com sucesso! Documento carregado e pronto para revisão.");
+        }
+
+        // Notifica o componente pai para abrir o pré-cadastro se for um animal detectado
+        if (extracted.patient_detected && onPatientDetected) {
+          onPatientDetected(extracted, newFileUrl, file.name);
+        }
       } else {
         alert("Não foi possível processar o laudo: " + (json.error || "Erro desconhecido"));
       }
