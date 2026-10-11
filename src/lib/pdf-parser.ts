@@ -18,7 +18,8 @@ export function extractPdfText(buffer: Buffer): PdfTextExtraction {
     fs.writeFileSync(tempFilePath, buffer);
 
     const scriptPath = path.resolve(process.cwd(), "scripts", "extract_pdf.py");
-    const result = spawnSync("python", [scriptPath, tempFilePath], {
+    const pythonBin = process.env.PYTHON_BIN || (process.platform === "win32" ? "python" : "python3");
+    const result = spawnSync(pythonBin, [scriptPath, tempFilePath], {
       encoding: "utf-8",
       timeout: 15000,
     });
