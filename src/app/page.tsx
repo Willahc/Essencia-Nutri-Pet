@@ -232,6 +232,7 @@ export default function Home() {
               {activeTab === "EXAMS" && (
                 <ExamReviewSideBySide 
                   exam={MOCK_EXAM} 
+                  species={patient.species}
                 />
               )}
             </div>
