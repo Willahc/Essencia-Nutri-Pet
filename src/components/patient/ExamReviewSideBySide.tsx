@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { ExamDocument, ExamParameterResult, Species, ExamExtractionResponse } from "@/types";
+import { generateZootecnicClinicalOpinion } from "@/lib/clinical-opinion";
 import { 
   FileText, 
   AlertTriangle, 
@@ -47,8 +48,30 @@ export function ExamReviewSideBySide({
     setCurrentExam(exam);
     setResults(exam.extracted_results);
     setIsApproved(exam.extraction_status === "REVIEWED_APPROVED");
-    setReviewNotes(exam.professional_review_notes || "");
-  }, [exam]);
+
+    // Se o laudo não tem parecer ou possui apenas texto genérico/placeholder, gera automaticamente o parecer clínico
+    if (!exam.professional_review_notes || exam.professional_review_notes.startsWith("Laudo extraído") || exam.professional_review_notes.startsWith("Verificar valor")) {
+      const generated = generateZootecnicClinicalOpinion({
+        patientName: exam.patient_detected?.name || (species === "CANINE" ? "Kate" : "Raposo Tavares"),
+        species: exam.patient_detected?.species || species,
+        breed: exam.patient_detected?.breed || "SRD",
+        results: exam.extracted_results,
+      });
+      setReviewNotes(generated);
+    } else {
+      setReviewNotes(exam.professional_review_notes);
+    }
+  }, [exam, species]);
+
+  const handleGenerateOpinion = () => {
+    const generated = generateZootecnicClinicalOpinion({
+      patientName: currentExam.patient_detected?.name || (species === "CANINE" ? "Kate" : "Raposo Tavares"),
+      species: currentExam.patient_detected?.species || species,
+      breed: currentExam.patient_detected?.breed || "SRD",
+      results: results,
+    });
+    setReviewNotes(generated);
+  };
 
   const handleApprove = () => {
     setIsApproved(true);
@@ -92,11 +115,19 @@ export function ExamReviewSideBySide({
 
       if (json.success && json.data) {
         const extracted = json.data;
-        const newResults: ExamParameterResult[] = extracted.extracted_results;
+        const newResults: ExamParameterResult[] = extracted.extracted_results || [];
+        const clinicalOpinion = extracted.preliminary_summary && !extracted.preliminary_summary.startsWith("Laudo extraído")
+          ? extracted.preliminary_summary
+          : generateZootecnicClinicalOpinion({
+              patientName: extracted.patient_detected?.name || file.name.replace(/\.[^/.]+$/, ""),
+              species: extracted.patient_detected?.species || species,
+              breed: extracted.patient_detected?.breed || "SRD",
+              results: newResults,
+            });
 
         setResults(newResults);
         setIsApproved(false);
-        setReviewNotes(extracted.preliminary_summary || "");
+        setReviewNotes(clinicalOpinion);
 
         const newExam: ExamDocument = {
           id: `ex-${Date.now()}`,
@@ -110,7 +141,7 @@ export function ExamReviewSideBySide({
           extracted_results: newResults,
           patient_detected: extracted.patient_detected,
           tutor_detected: extracted.tutor_detected,
-          professional_review_notes: extracted.preliminary_summary,
+          professional_review_notes: clinicalOpinion,
         };
 
         setCurrentExam(newExam);
@@ -369,15 +400,26 @@ export function ExamReviewSideBySide({
 
             {/* Parecer do Profissional */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                Parecer Preliminar / Conduta do Zootecnista / Nutrólogo
-              </label>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 mb-2">
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  Parecer Técnico e Conduta do Zootecnista / Nutrólogo
+                </label>
+                <button
+                  type="button"
+                  onClick={handleGenerateOpinion}
+                  className="inline-flex items-center space-x-1 text-[11px] font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 px-2.5 py-1 rounded-lg transition-colors shadow-2xs w-fit"
+                  title="Sintetizar parecer técnico automaticamente com base nos biomarcadores"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-purple-600" />
+                  <span>Gerar Parecer Clínico com IA</span>
+                </button>
+              </div>
               <textarea
-                rows={3}
+                rows={6}
                 value={reviewNotes}
                 onChange={(e) => setReviewNotes(e.target.value)}
                 placeholder="Descreva a interpretação dos biomarcadores para o manejo nutricional..."
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white leading-relaxed font-sans"
               />
             </div>
           </div>

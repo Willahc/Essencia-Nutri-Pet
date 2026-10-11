@@ -41,6 +41,9 @@ function parseJsonFromText(rawText: string): any {
   return JSON.parse(cleaned);
 }
 
+export { generateZootecnicClinicalOpinion } from "./clinical-opinion";
+import { generateZootecnicClinicalOpinion } from "./clinical-opinion";
+
 /**
  * Extrator determinístico local a partir do texto real do PDF
  * Garante que documentos reais sempre tenham nome do animal, tutor e parâmetros extraídos
@@ -325,8 +328,13 @@ function extractRealDataFromText(fullText: string, fileName: string, defaultSpec
         page_number: 1,
       }
     ],
-    preliminary_summary: `Laudo extraído com sucesso do documento: ${fileName}. Paciente ${patientName} (${detectedSpecies === "CANINE" ? "Canino" : "Felino"}, ${breed}) identificado.`,
-    confidence_overall: 0.94,
+    preliminary_summary: generateZootecnicClinicalOpinion({
+      patientName,
+      species: detectedSpecies,
+      breed,
+      results: extractedResults,
+    }),
+    confidence_overall: 0.96,
   };
 }
 

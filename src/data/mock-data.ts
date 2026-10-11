@@ -138,7 +138,15 @@ export const MOCK_EXAM: ExamDocument = {
   file_url: "/exams/Canina_Kate.pdf",
   file_hash_sha256: "001-0381037-CVVM-KATE",
   extraction_status: "PENDING_REVIEW",
-  professional_review_notes: "Hemograma completo com hemoglobina discretamente aumentada (21,6 g/dL). Perfil renal preservado (Ureia 47,0 mg/dL, Creatinina 1,40 mg/dL). Fígado com ALT 88 U/L e FA 50 U/L.",
+  professional_review_notes: `Parecer Técnico Zootécnico/Nutricional • Paciente: KATE (Canino, S.R.D. CANINO).
+
+• Função Renal: Escórias nitrogenadas séricas (Ureia 47,0 mg/dL e Creatinina 1,40 mg/dL) mantêm-se dentro dos limites fisiológicos da espécie, indicando taxa de filtração glomerular preservada.
+
+• Perfil Hepático: Enzimas de integridade celular e excreção biliar (ALT 88 U/L, Fosfatase Alcalina 50 U/L, GGT 12 U/L) sem alterações significativas.
+
+• Eritrograma: Hemoglobina elevada (Hb: 21,6 g/dL, Ht: 54,0%), compatível com hemoconcentração decorrente de desidratação leve prévia à punção venosa ou policitemia relativa transitória. Estimular hidratação diária.
+
+• Conduta Nutricional Recomendada: Manutenção de plano nutricional balanceado conforme diretrizes NRC (2006) / FEDIAF, focado no escore de condição corporal ideal e hidratação contínua.`,
   extracted_results: [
     {
       id: "res-k1",
@@ -273,7 +281,17 @@ export const MOCK_EXAM_RAPOSO: ExamDocument = {
   file_url: "/exams/Felina_Raposo_Tavares.pdf",
   file_hash_sha256: "004-0887356-CVVM-RAPOSO",
   extraction_status: "PENDING_REVIEW",
-  professional_review_notes: "Atenção clínica: Ureia (58,0 mg/dL) e Creatinina (3,40 mg/dL) elevadas. Fósforo sérico de 6,30 mg/dL requer monitoramento estrito conforme diretrizes IRIS para doença renal felina.",
+  professional_review_notes: `Parecer Técnico Zootécnico/Nutricional • Paciente: RAPOSO TAVARES (Felino, S.R.D. FELINO).
+
+• Função Renal: Azotemia detectada (Ureia: 58,0 mg/dL, Creatinina: 3,40 mg/dL). Em felinos, creatinina >= 2,8 mg/dL requer monitoramento estrito de Estágio 3/4 conforme diretrizes IRIS (International Renal Interest Society). Fósforo sérico elevado (6,30 mg/dL), superando a meta terapêutica nefroprotetora (alvo IRIS de 2,7 a 4,6 mg/dL).
+
+• Perfil Hepatobiliar: Leve elevação de GGT (11 U/L) com ALT (55 U/L) e FA (75 U/L) normais. Recomenda-se controle no teor de gorduras da dieta.
+
+• Eritrograma: Índices eritrocitários normais (Hemoglobina: 14,0 g/dL, Hematócrito: 43,6%), sem evidência de anemia não-regenerativa no momento.
+
+• Metabolismo Glicídico: Glicemia reduzida em tubo seco (55,0 mg/dL) decorrente de consumo in vitro pós-coleta. Frutosamina estável (253 µmol/L) afasta hipoglicemia crônica.
+
+• Conduta Nutricional Recomendada: Instituir transição para dieta renal úmida de alta palatabilidade, restrição moderada de fósforo (<= 0.8g/1000 kcal), aporte proteico de altíssima digestibilidade (ovos, aves cozidas), suplementação de ômega-3 (EPA/DHA 100-150 mg/kg), quelante entérico de fósforo se persistir elevado e estímulo vigoroso à ingestão hídrica.`,
   extracted_results: [
     {
       id: "res-r1",
