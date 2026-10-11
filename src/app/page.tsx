@@ -17,7 +17,8 @@ import {
   MOCK_MEASUREMENTS, 
   MOCK_APPOINTMENTS, 
   MOCK_NUTRITION_PLAN, 
-  MOCK_EXAM 
+  MOCK_EXAM,
+  MOCK_EXAM_RAPOSO 
 } from "@/data/mock-data";
 import { 
   AppointmentRecord, 
@@ -43,7 +44,7 @@ export default function Home() {
   const [patients, setPatients] = useState<Patient[]>(MOCK_PATIENTS);
   const [measurements, setMeasurements] = useState<MeasurementRecord[]>(MOCK_MEASUREMENTS);
   const [appointments, setAppointments] = useState<AppointmentRecord[]>(MOCK_APPOINTMENTS);
-  const [exams, setExams] = useState<ExamDocument[]>([MOCK_EXAM]);
+  const [exams, setExams] = useState<ExamDocument[]>([MOCK_EXAM, MOCK_EXAM_RAPOSO]);
 
   // Modais
   const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState<boolean>(false);

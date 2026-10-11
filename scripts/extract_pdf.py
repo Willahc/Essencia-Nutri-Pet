@@ -24,10 +24,13 @@ def extract(pdf_path):
         }
 
 if __name__ == "__main__":
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+
     if len(sys.argv) < 2:
-        print(json.dumps({"success": False, "error": "No file path provided"}))
+        print(json.dumps({"success": False, "error": "No file path provided"}, ensure_ascii=True))
         sys.exit(1)
     
     file_path = sys.argv[1]
     result = extract(file_path)
-    print(json.dumps(result, ensure_ascii=False))
+    print(json.dumps(result, ensure_ascii=True))
