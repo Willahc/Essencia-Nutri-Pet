@@ -28,7 +28,8 @@ import {
   DetectedTutorInfo, 
   ExamExtractionResponse,
   Species,
-  Sex 
+  Sex,
+  ExamDocument 
 } from "@/types";
 import { Activity, Calculator, Utensils, FileText, PlusCircle, Printer, Eye, User, Sparkles, UserPlus } from "lucide-react";
 
@@ -42,6 +43,7 @@ export default function Home() {
   const [patients, setPatients] = useState<Patient[]>(MOCK_PATIENTS);
   const [measurements, setMeasurements] = useState<MeasurementRecord[]>(MOCK_MEASUREMENTS);
   const [appointments, setAppointments] = useState<AppointmentRecord[]>(MOCK_APPOINTMENTS);
+  const [exams, setExams] = useState<ExamDocument[]>([MOCK_EXAM]);
 
   // Modais
   const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState<boolean>(false);
@@ -56,10 +58,29 @@ export default function Home() {
     date: string;
   } | null>(null);
 
+  // Documento temporário para vincular ao novo animal quando o pré-cadastro for confirmado
+  const [pendingExam, setPendingExam] = useState<{
+    extracted: ExamExtractionResponse;
+    fileUrl: string;
+    fileName: string;
+  } | null>(null);
+
   const patient = patients.find((p) => p.id === selectedPatientId) || patients[0];
   const tutor = tutors.find((t) => t.id === patient.tutor_id) || tutors[0];
   const patientMeasurements = measurements.filter((m) => m.patient_id === patient.id);
   const patientAppointments = appointments.filter((a) => a.patient_id === patient.id);
+  const currentPatientExam = exams.find((e) => e.patient_id === patient.id) || {
+    id: `ex-${patient.id}`,
+    patient_id: patient.id,
+    laboratory_name: "BioVet Diagnósticos",
+    exam_date: new Date().toISOString().split("T")[0],
+    file_name: `laudo_${patient.name.toLowerCase()}.pdf`,
+    file_url: "/mock-docs/laudo_bioquimico_thor.pdf",
+    file_hash_sha256: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    extraction_status: "PENDING_REVIEW" as const,
+    extracted_results: [],
+    professional_review_notes: "Aguardando envio de laudo para este paciente.",
+  };
 
   const handleSaveAppointment = (newApt: AppointmentRecord, newMeas: MeasurementRecord) => {
     setAppointments((prev) => [newApt, ...prev]);
@@ -79,7 +100,7 @@ export default function Home() {
     );
   };
 
-  const handlePatientDetected = (extracted: ExamExtractionResponse) => {
+  const handlePatientDetected = (extracted: ExamExtractionResponse, fileUrl: string, fileName: string) => {
     if (extracted.patient_detected) {
       setDetectedData({
         patient: extracted.patient_detected,
@@ -87,8 +108,25 @@ export default function Home() {
         lab: extracted.laboratory_name,
         date: extracted.exam_date,
       });
+      setPendingExam({
+        extracted,
+        fileUrl,
+        fileName,
+      });
       setIsDetectedModalOpen(true);
     }
+  };
+
+  const handleSaveExam = (savedExam: ExamDocument) => {
+    setExams((prev) => {
+      const idx = prev.findIndex((e) => e.id === savedExam.id);
+      if (idx >= 0) {
+        const copy = [...prev];
+        copy[idx] = savedExam;
+        return copy;
+      }
+      return [savedExam, ...prev];
+    });
   };
 
   const handleConfirmPreRegistration = (data: {
@@ -159,6 +197,26 @@ export default function Home() {
       diet_recommendation: "Avaliação laboratorial em andamento. Início de planejamento dietético personalizado.",
       created_at: nowIso,
     };
+
+    if (pendingExam) {
+      const newExamDoc: ExamDocument = {
+        id: `ex-${Date.now()}`,
+        patient_id: newPatientId,
+        appointment_id: newAppointment.id,
+        laboratory_name: pendingExam.extracted.laboratory_name,
+        exam_date: pendingExam.extracted.exam_date,
+        file_name: pendingExam.fileName,
+        file_url: pendingExam.fileUrl,
+        file_hash_sha256: `sha256_${Date.now()}`,
+        extraction_status: "PENDING_REVIEW",
+        extracted_results: pendingExam.extracted.extracted_results,
+        professional_review_notes: pendingExam.extracted.preliminary_summary,
+        patient_detected: pendingExam.extracted.patient_detected,
+        tutor_detected: pendingExam.extracted.tutor_detected,
+      };
+      setExams((prev) => [newExamDoc, ...prev]);
+      setPendingExam(null);
+    }
 
     setTutors((prev) => [newTutor, ...prev]);
     setPatients((prev) => [newPatient, ...prev]);
@@ -343,9 +401,11 @@ export default function Home() {
 
               {activeTab === "EXAMS" && (
                 <ExamReviewSideBySide 
-                  exam={MOCK_EXAM} 
+                  key={patient.id}
+                  exam={currentPatientExam} 
                   species={patient.species}
                   onPatientDetected={handlePatientDetected}
+                  onExamSaved={handleSaveExam}
                 />
               )}
             </div>
@@ -370,7 +430,7 @@ export default function Home() {
         appointments={patientAppointments}
         measurements={patientMeasurements}
         plan={MOCK_NUTRITION_PLAN}
-        exam={MOCK_EXAM}
+        exam={currentPatientExam}
       />
 
       {/* Modal de Pré-Cadastro de Paciente Detectado via Exame */}

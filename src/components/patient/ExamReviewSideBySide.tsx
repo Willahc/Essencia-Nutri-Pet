@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { ExamDocument, ExamParameterResult, Species, ExamExtractionResponse } from "@/types";
 import { 
   FileText, 
@@ -23,9 +23,15 @@ interface ExamReviewSideBySideProps {
   exam: ExamDocument;
   species?: Species;
   onPatientDetected?: (extracted: ExamExtractionResponse, fileUrl: string, fileName: string) => void;
+  onExamSaved?: (savedExam: ExamDocument) => void;
 }
 
-export function ExamReviewSideBySide({ exam, species = "CANINE", onPatientDetected }: ExamReviewSideBySideProps) {
+export function ExamReviewSideBySide({ 
+  exam, 
+  species = "CANINE", 
+  onPatientDetected,
+  onExamSaved 
+}: ExamReviewSideBySideProps) {
   const [currentExam, setCurrentExam] = useState<ExamDocument>(exam);
   const [results, setResults] = useState<ExamParameterResult[]>(exam.extracted_results);
   const [isApproved, setIsApproved] = useState(exam.extraction_status === "REVIEWED_APPROVED");
@@ -36,20 +42,36 @@ export function ExamReviewSideBySide({ exam, species = "CANINE", onPatientDetect
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Sincroniza estado interno quando o paciente ou exame mudar
+  useEffect(() => {
+    setCurrentExam(exam);
+    setResults(exam.extracted_results);
+    setIsApproved(exam.extraction_status === "REVIEWED_APPROVED");
+    setReviewNotes(exam.professional_review_notes || "");
+  }, [exam]);
+
   const handleApprove = () => {
     setIsApproved(true);
-    setCurrentExam((prev) => ({
-      ...prev,
+    const approved: ExamDocument = {
+      ...currentExam,
       extraction_status: "REVIEWED_APPROVED",
       reviewed_at: new Date().toISOString(),
       reviewed_by: "Dr. Roberto Almeida (CRZ 4821)",
       professional_review_notes: reviewNotes,
-    }));
+      extracted_results: results,
+    };
+    setCurrentExam(approved);
+    if (onExamSaved) {
+      onExamSaved(approved);
+    }
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    // Gera URL local segura para visualização imediata do PDF/Imagem no navegador
+    const newFileUrl = URL.createObjectURL(file);
 
     try {
       setIsUploading(true);
@@ -92,6 +114,9 @@ export function ExamReviewSideBySide({ exam, species = "CANINE", onPatientDetect
         };
 
         setCurrentExam(newExam);
+        if (onExamSaved) {
+          onExamSaved(newExam);
+        }
 
         if (extracted.api_notice) {
           setUploadMessage(`Laudo processado via leitor de alta precisão. (${extracted.api_notice})`);
