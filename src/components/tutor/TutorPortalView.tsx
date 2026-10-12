@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Patient, Tutor, NutritionPlan, MeasurementRecord, TutorDailyLog } from "@/types";
+import { Patient, Tutor, NutritionPlan, MeasurementRecord, TutorDailyLog, ExamDocument } from "@/types";
 import { 
   Utensils, 
   Droplets, 
@@ -16,10 +16,16 @@ import {
   Clock,
   Sparkles,
   Check,
-  AlertTriangle
+  AlertTriangle,
+  Stethoscope,
+  Copy,
+  X,
+  MessageSquare
 } from "lucide-react";
 import { STOOL_SCORE_DEFINITIONS, getTransitionStepInfo, calculateAdherenceMetrics } from "@/lib/adherence";
+import { detectVeterinaryReferralAlert, VeterinaryReferralAlert } from "@/lib/clinical-referral";
 import { NewDailyLogModal } from "./NewDailyLogModal";
+import { BodyConditionTracker } from "@/components/patient/BodyConditionTracker";
 
 interface TutorPortalViewProps {
   patient: Patient;
@@ -27,6 +33,7 @@ interface TutorPortalViewProps {
   plan: NutritionPlan;
   measurements: MeasurementRecord[];
   logs?: TutorDailyLog[];
+  exam?: ExamDocument;
   onOpenReport: () => void;
   onSaveDailyLog?: (newLog: TutorDailyLog) => void;
 }
@@ -37,10 +44,13 @@ export function TutorPortalView({
   plan,
   measurements,
   logs = [],
+  exam,
   onOpenReport,
   onSaveDailyLog,
 }: TutorPortalViewProps) {
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
+  const [isReferralModalOpen, setIsReferralModalOpen] = useState(false);
+  const [copiedReferral, setCopiedReferral] = useState(false);
   const [waterDrunk, setWaterDrunk] = useState<number>(
     logs.length > 0 ? logs[0].water_intake_ml : Math.round(patient.current_weight_kg * 45)
   );
@@ -73,8 +83,98 @@ export function TutorPortalView({
     }
   };
 
+  const referralAlert = detectVeterinaryReferralAlert({
+    patientName: patient.name,
+    species: patient.species,
+    breed: patient.breed,
+    tutorName: tutor.name,
+    examDate: exam?.exam_date,
+    laboratoryName: exam?.laboratory_name,
+    results: exam?.extracted_results || [],
+  });
+
+  const handleCopyReferral = () => {
+    navigator.clipboard.writeText(referralAlert.referralLetterText);
+    setCopiedReferral(true);
+    setTimeout(() => setCopiedReferral(false), 3000);
+  };
+
   return (
     <div className="space-y-6">
+      {/* CARD DE ALERTA PREVENTIVO DE SAÚDE PARA O TUTOR */}
+      {referralAlert.hasAlert && (
+        <div className={`p-5 rounded-3xl border shadow-sm transition-all ${
+          referralAlert.urgency === 'URGENT'
+            ? 'bg-gradient-to-r from-rose-50 via-white to-rose-50 border-rose-300 text-rose-950'
+            : referralAlert.urgency === 'RECOMMENDED'
+            ? 'bg-gradient-to-r from-amber-50 via-white to-amber-50 border-amber-300 text-amber-950'
+            : 'bg-gradient-to-r from-blue-50 via-white to-blue-50 border-blue-200 text-slate-800'
+        }`}>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 border-b border-rose-200/50">
+            <div className="flex items-center space-x-2.5">
+              <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 ${
+                referralAlert.urgency === 'URGENT' ? 'bg-rose-600 text-white' : 'bg-amber-600 text-white'
+              }`}>
+                <Stethoscope className="w-5 h-5" />
+              </div>
+              <div>
+                <span className={`text-[11px] font-black uppercase tracking-wider block ${
+                  referralAlert.urgency === 'URGENT' ? 'text-rose-700' : 'text-amber-700'
+                }`}>
+                  {referralAlert.urgencyBadgeText}
+                </span>
+                <h3 className="font-extrabold text-base text-slate-900">
+                  Aviso Preventivo de Saúde para {patient.name}
+                </h3>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setIsReferralModalOpen(true)}
+              className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold flex items-center space-x-1.5 shadow-sm transition-all"
+            >
+              <FileText className="w-4 h-4" />
+              <span>Carta para o Veterinário</span>
+            </button>
+          </div>
+
+          <div className="mt-3 text-xs leading-relaxed text-slate-700 space-y-2">
+            <p className="font-medium">
+              {referralAlert.tutorGuidance.overview}
+            </p>
+
+            {/* Red flags explicadas para o tutor */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 my-3">
+              {referralAlert.redFlags.map((rf, idx) => (
+                <div key={idx} className="bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-2xs">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-bold text-xs text-slate-900">{rf.biomarker}</span>
+                    <span className="text-[10px] font-bold text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200">
+                      {rf.observedValue}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-600 leading-snug">
+                    {rf.tutorExplanation}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <div className="bg-white/80 p-3 rounded-xl border border-slate-200 text-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div>
+                <span className="text-slate-500 font-semibold block">Especialidade recomendada:</span>
+                <strong className="text-purple-800">{referralAlert.recommendedSpecialties.join(" ou ")}</strong>
+              </div>
+              <div className="text-right">
+                <span className="text-slate-500 font-semibold block">Prazo sugerido:</span>
+                <strong className="text-rose-700">{referralAlert.suggestedActionTimeline}</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Boas-vindas ao Tutor */}
       <div className="bg-gradient-to-r from-emerald-600 to-teal-700 rounded-3xl p-6 sm:p-8 text-white shadow-lg relative overflow-hidden">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
@@ -129,6 +229,13 @@ export function TutorPortalView({
           </div>
         </div>
       )}
+
+      {/* CONDICIONAMENTO CORPORAL (ECC 1-9) & PROJEÇÃO DE SAÚDE (SIMULADOR DO TUTOR) */}
+      <BodyConditionTracker
+        patient={patient}
+        plan={plan}
+        variant="TUTOR"
+      />
 
       {/* CRONOGRAMA DE TRANSIÇÃO ALIMENTAR */}
       <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-7">
@@ -411,6 +518,85 @@ export function TutorPortalView({
         currentDaySuggestion={currentTransitionDay}
         onSaveLog={handleSaveLog}
       />
+
+      {/* Modal da Carta de Encaminhamento & Guia para a Consulta */}
+      {isReferralModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden border border-slate-200 animate-fadeIn">
+            <div className="px-6 py-4 bg-gradient-to-r from-purple-700 to-indigo-800 text-white flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+                  <Stethoscope className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-base">Carta para o Médico-Veterinário</h3>
+                  <p className="text-xs text-purple-200">
+                    Documento para você levar impresso ou enviar pelo WhatsApp ao seu veterinário
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsReferralModalOpen(false)}
+                className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 overflow-y-auto flex-1 space-y-4">
+              <div className="bg-purple-50 border border-purple-200 rounded-2xl p-4">
+                <h4 className="text-xs font-bold text-purple-900 uppercase tracking-wider mb-2 flex items-center">
+                  <MessageSquare className="w-3.5 h-3.5 mr-1.5 text-purple-700" />
+                  Perguntas Sugeridas para Você Fazer na Consulta:
+                </h4>
+                <ul className="space-y-1.5 text-xs text-purple-950">
+                  {referralAlert.tutorGuidance.whatQuestionsToAsk.map((q, qIdx) => (
+                    <li key={qIdx} className="flex items-start space-x-2">
+                      <span className="text-purple-600 font-bold">•</span>
+                      <span>{q}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div>
+                <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                  Texto da Carta de Encaminhamento:
+                </h4>
+                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 font-mono text-[11px] text-slate-800 whitespace-pre-wrap leading-relaxed max-h-72 overflow-y-auto shadow-inner">
+                  {referralAlert.referralLetterText}
+                </div>
+              </div>
+            </div>
+
+            <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
+              <span className="text-xs text-slate-500">
+                Especialidade recomendada: <strong>{referralAlert.recommendedSpecialties.join(", ")}</strong>
+              </span>
+
+              <div className="flex items-center space-x-2">
+                <button
+                  type="button"
+                  onClick={handleCopyReferral}
+                  className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold flex items-center space-x-1.5 transition-all shadow-xs"
+                >
+                  {copiedReferral ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                  <span>{copiedReferral ? "Copiado!" : "Copiar Carta Completa"}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsReferralModalOpen(false)}
+                  className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-bold transition-all"
+                >
+                  Fechar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

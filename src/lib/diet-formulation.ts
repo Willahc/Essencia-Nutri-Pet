@@ -1,4 +1,4 @@
-import { Species, FeedingType, NutritionPlan, NutritionPlanItem, Patient, Tutor } from "@/types";
+import { Species, FeedingType, NutritionPlan, NutritionPlanItem, Patient, Tutor, IngredientCategory } from "@/types";
 
 export interface IngredientDefinition {
   id: string;
@@ -101,6 +101,48 @@ export const INGREDIENT_DATABASE: IngredientDefinition[] = [
     is_renal_safe: true,
     default_note: "Proteína magra hipoalergênica para controle ponderal",
   },
+  {
+    id: "ing-coelho-carne",
+    name: "Carne de coelho cozida desfiada",
+    category: "PROTEIN",
+    kcal_per_100g: 173,
+    protein_g_per_100g: 33.0,
+    fat_g_per_100g: 3.5,
+    carb_g_per_100g: 0.0,
+    calcium_mg_per_100g: 14,
+    phosphorus_mg_per_100g: 220,
+    species: ["CANINE", "FELINE"],
+    is_renal_safe: true,
+    default_note: "Proteína única inédita (Novel Protein) de escolha para dietas de eliminação e alergias",
+  },
+  {
+    id: "ing-cordeiro-carne",
+    name: "Carne de cordeiro magra cozida",
+    category: "PROTEIN",
+    kcal_per_100g: 206,
+    protein_g_per_100g: 28.0,
+    fat_g_per_100g: 10.0,
+    carb_g_per_100g: 0.0,
+    calcium_mg_per_100g: 10,
+    phosphorus_mg_per_100g: 210,
+    species: ["CANINE"],
+    is_renal_safe: true,
+    default_note: "Proteína nobre para cães com alergia alimentar a frango ou carne bovina",
+  },
+  {
+    id: "ing-clara-ovo",
+    name: "Clara de ovo cozida isolada",
+    category: "PROTEIN",
+    kcal_per_100g: 52,
+    protein_g_per_100g: 11.0,
+    fat_g_per_100g: 0.2,
+    carb_g_per_100g: 0.7,
+    calcium_mg_per_100g: 7,
+    phosphorus_mg_per_100g: 15,
+    species: ["CANINE", "FELINE"],
+    is_renal_safe: true,
+    default_note: "Padrão-ouro para DRC IRIS 3 e 4: Albumina pura de altíssimo valor biológico com baixíssimo fósforo",
+  },
 
   // --- CARBOIDRATOS & ENERGIA ---
   {
@@ -158,6 +200,34 @@ export const INGREDIENT_DATABASE: IngredientDefinition[] = [
     species: ["CANINE"],
     is_renal_safe: false,
     default_note: "Rica em betaglucanas prebióticas para modulação da microbiota",
+  },
+  {
+    id: "ing-inhame-cozido",
+    name: "Inhame cozido no vapor",
+    category: "CARBOHYDRATE",
+    kcal_per_100g: 118,
+    protein_g_per_100g: 1.5,
+    fat_g_per_100g: 0.2,
+    carb_g_per_100g: 27.5,
+    calcium_mg_per_100g: 17,
+    phosphorus_mg_per_100g: 55,
+    species: ["CANINE", "FELINE"],
+    is_renal_safe: true,
+    default_note: "Carboidrato hipoalergênico com mucilagens solúveis para proteção da mucosa gastrointestinal",
+  },
+  {
+    id: "ing-mandioquinha-cozida",
+    name: "Mandioquinha / Batata-baroa cozida",
+    category: "CARBOHYDRATE",
+    kcal_per_100g: 101,
+    protein_g_per_100g: 0.9,
+    fat_g_per_100g: 0.2,
+    carb_g_per_100g: 24.0,
+    calcium_mg_per_100g: 20,
+    phosphorus_mg_per_100g: 40,
+    species: ["CANINE", "FELINE"],
+    is_renal_safe: true,
+    default_note: "Altíssima palatabilidade para animais inapetentes ou convalescentes",
   },
 
   // --- VEGETAIS & FIBRAS ---
@@ -418,6 +488,17 @@ export interface DietSummaryCalculation {
   proteinPercentEnergy: number;
   fatPercentEnergy: number;
   carbPercentEnergy: number;
+  // Métricas Zootécnicas Padrão Ouro (NRC 2006 / FEDIAF / IRIS)
+  dryMatterGrams: number;
+  dryMatterPercent: number;
+  proteinPercentDryMatter: number;
+  fatPercentDryMatter: number;
+  carbPercentDryMatter: number;
+  proteinGramsPer1000Kcal: number;
+  fatGramsPer1000Kcal: number;
+  carbGramsPer1000Kcal: number;
+  phosphorusGramsPer1000Kcal: number;
+  calciumGramsPer1000Kcal: number;
   totalDebonedMeatGrams: number;
   recommendedCalciumCarbonateGrams: number;
   recommendedOmega3DoseMg: number;
@@ -554,6 +635,22 @@ export function calculateDietSummary(params: {
   });
   const taurineRequired = species === 'FELINE' && hasHomemadeIngredients;
 
+  // Cálculo de Matéria Seca (MS) e Densidades Nutricionais (Padrão Ouro NRC 2006 / FEDIAF / IRIS)
+  const estimatedAshGrams = Number((totalGrams * 0.025).toFixed(1));
+  const dryMatterGrams = Number((proteinGrams + fatGrams + carbGrams + estimatedAshGrams).toFixed(1));
+  const dryMatterPercent = totalGrams > 0 ? Number(((dryMatterGrams / totalGrams) * 100).toFixed(1)) : 0;
+
+  const proteinPercentDryMatter = dryMatterGrams > 0 ? Number(((proteinGrams / dryMatterGrams) * 100).toFixed(1)) : 0;
+  const fatPercentDryMatter = dryMatterGrams > 0 ? Number(((fatGrams / dryMatterGrams) * 100).toFixed(1)) : 0;
+  const carbPercentDryMatter = dryMatterGrams > 0 ? Number(((carbGrams / dryMatterGrams) * 100).toFixed(1)) : 0;
+
+  const safeKcal = totalKcal > 0 ? totalKcal : 1;
+  const proteinGramsPer1000Kcal = Number(((proteinGrams / safeKcal) * 1000).toFixed(1));
+  const fatGramsPer1000Kcal = Number(((fatGrams / safeKcal) * 1000).toFixed(1));
+  const carbGramsPer1000Kcal = Number(((carbGrams / safeKcal) * 1000).toFixed(1));
+  const phosphorusGramsPer1000Kcal = Number((estimatedPhosphorusMg / safeKcal).toFixed(2));
+  const calciumGramsPer1000Kcal = Number((finalCa / safeKcal).toFixed(2));
+
   return {
     totalGrams,
     totalKcal,
@@ -565,6 +662,16 @@ export function calculateDietSummary(params: {
     proteinPercentEnergy,
     fatPercentEnergy,
     carbPercentEnergy,
+    dryMatterGrams,
+    dryMatterPercent,
+    proteinPercentDryMatter,
+    fatPercentDryMatter,
+    carbPercentDryMatter,
+    proteinGramsPer1000Kcal,
+    fatGramsPer1000Kcal,
+    carbGramsPer1000Kcal,
+    phosphorusGramsPer1000Kcal,
+    calciumGramsPer1000Kcal,
     totalDebonedMeatGrams,
     recommendedCalciumCarbonateGrams,
     recommendedOmega3DoseMg,
@@ -1110,4 +1217,121 @@ export function generatePrintableRecipeCardHtml(params: {
   </div>
 </body>
 </html>`;
+}
+
+export interface RawShoppingItem {
+  ingredient_name: string;
+  category: IngredientCategory;
+  dailyCookedGrams: number;
+  totalCookedGrams: number;
+  cookingFactor: number;
+  rawGramsToBuy: number;
+  rawKgFormatted: string;
+  preparationTip: string;
+}
+
+export interface BatchCookingPlan {
+  days: number;
+  totalMeals: number;
+  portionsPerMealGrams: number;
+  shoppingList: RawShoppingItem[];
+  totalRawWeightKg: number;
+  totalSupplementsList: { name: string; totalAmount: string }[];
+  storageInstructions: string[];
+}
+
+export function getIngredientCookingFactor(name: string, category?: IngredientCategory): { factor: number; tip: string } {
+  const norm = name.toLowerCase();
+  
+  if (norm.includes("arroz")) {
+    return { factor: 0.40, tip: "O arroz triplica de peso após cocção. Cozinhe em água sem sal e sem alho." };
+  }
+  if (norm.includes("frango") || norm.includes("peito") || norm.includes("carne") || norm.includes("patinho") || norm.includes("bovino") || norm.includes("suíno") || norm.includes("lombo") || norm.includes("coelho") || norm.includes("cordeiro") || norm.includes("peixe") || norm.includes("tilápia") || norm.includes("salmão")) {
+    return { factor: 1.35, tip: "Carnes reduzem ~25% do peso na cocção (perda de água). Pese cru para comprar e após cozido para montar as marmitas." };
+  }
+  if (norm.includes("fígado") || norm.includes("moela") || norm.includes("coração") || category === "ORGAN") {
+    return { factor: 1.30, tip: "Vísceras desidratam levemente. Cozinhe bem e descarte o excesso de gordura sobrenadante se houver." };
+  }
+  if (norm.includes("batata") || norm.includes("mandioquinha") || norm.includes("inhame") || norm.includes("abóbora")) {
+    return { factor: 1.10, tip: "Tubérculos cozidos no vapor mantêm quase o mesmo peso. Pese com uma pequena margem para cascas." };
+  }
+  if (norm.includes("chuchu") || norm.includes("abobrinha") || norm.includes("cenoura") || norm.includes("brócolis") || category === "VEGETABLE") {
+    return { factor: 1.20, tip: "Legumes perdem pequenas quantidades no corte de talos e extremidades." };
+  }
+  if (norm.includes("azeite") || norm.includes("óleo") || category === "FAT") {
+    return { factor: 1.0, tip: "Adicionar diretamente nas porções prontas ou no momento de servir." };
+  }
+  return { factor: 1.15, tip: "Pesar cozido e escorrido para a montagem final." };
+}
+
+export function calculateBatchCookingPlan(params: {
+  items: NutritionPlanItem[];
+  supplements: string[];
+  mealsPerDay: number;
+  days: number;
+  recommendedCalciumCarbonateGrams: number;
+  recommendedOmega3DoseMg: number;
+}): BatchCookingPlan {
+  const { items, supplements, mealsPerDay, days, recommendedCalciumCarbonateGrams, recommendedOmega3DoseMg } = params;
+
+  const totalMeals = mealsPerDay * days;
+  const dailyTotalCooked = items.reduce((acc, it) => acc + it.quantity_grams, 0);
+  const portionsPerMealGrams = Math.round(dailyTotalCooked / (mealsPerDay || 1));
+
+  let totalRawGramsSum = 0;
+
+  const shoppingList: RawShoppingItem[] = items.map((item) => {
+    const { factor, tip } = getIngredientCookingFactor(item.ingredient_name, item.category);
+    const dailyCooked = item.quantity_grams;
+    const totalCooked = dailyCooked * days;
+    const rawGrams = Math.round(totalCooked * factor);
+    totalRawGramsSum += rawGrams;
+
+    const rawKgFormatted = (rawGrams / 1000).toFixed(2) + " kg";
+
+    return {
+      ingredient_name: item.ingredient_name,
+      category: item.category || 'PROTEIN',
+      dailyCookedGrams: dailyCooked,
+      totalCookedGrams: totalCooked,
+      cookingFactor: factor,
+      rawGramsToBuy: rawGrams,
+      rawKgFormatted,
+      preparationTip: tip,
+    };
+  });
+
+  const totalSupplementsList = [
+    ...(recommendedCalciumCarbonateGrams > 0 ? [{
+      name: "Carbonato de Cálcio puro (ou casca em pó)",
+      totalAmount: `${(recommendedCalciumCarbonateGrams * days).toFixed(1)} g (~${Math.round(recommendedCalciumCarbonateGrams * days * 0.2)} colheres de chá)`,
+    }] : []),
+    ...(recommendedOmega3DoseMg > 0 ? [{
+      name: "Ômega-3 EPA + DHA",
+      totalAmount: `${Math.round((recommendedOmega3DoseMg * days) / 1000)} cápsulas de 1000mg ou ${(recommendedOmega3DoseMg * days).toLocaleString('pt-BR')} mg`,
+    }] : []),
+    ...supplements.map(s => ({
+      name: s,
+      totalAmount: `${days} doses diárias`,
+    }))
+  ];
+
+  const storageInstructions = [
+    `Rotule ${totalMeals} potes herméticos de plástico livre de BPA ou de vidro com a data de preparo.`,
+    `Distribua exatamente ${portionsPerMealGrams}g da mistura cozida e escorrida por pote.`,
+    `Mantenha no freezer a -18°C por até 30 dias.`,
+    `Descongele a porção na geladeira (4°C) na véspera por 12 a 24 horas.`,
+    `Aqueça em banho-maria ou micro-ondas em potência média até amornar (não ferva para preservar nutrientes).`,
+    `IMPORTANTE: Adicione os suplementos vitamínicos, carbonato de cálcio e ômega-3 somente no prato na hora de servir.`,
+  ];
+
+  return {
+    days,
+    totalMeals,
+    portionsPerMealGrams,
+    shoppingList,
+    totalRawWeightKg: Number((totalRawGramsSum / 1000).toFixed(2)),
+    totalSupplementsList,
+    storageInstructions,
+  };
 }

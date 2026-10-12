@@ -2,7 +2,7 @@ import { BodyConditionScore, Species } from "@/types";
 
 /**
  * Zootecnia & Nutrição Clínica de Cães e Gatos
- * Fórmulas oficiais baseadas no NRC (2006) e Diretrizes Globais de Nutrição WSAVA.
+ * Fórmulas oficiais baseadas no NRC (2006), FEDIAF (2024) e Diretrizes Globais de Nutrição WSAVA.
  */
 
 export interface EnergyRequirementResult {
@@ -12,6 +12,8 @@ export interface EnergyRequirementResult {
   hydration_ml_day: number;
   ideal_weight_estimate_kg: number;
   target_daily_loss_grams?: { min: number; max: number };
+  hepatic_lipidosis_risk?: boolean;
+  zootecnic_notes?: string[];
 }
 
 export type PhysiologicalState = 
@@ -25,10 +27,15 @@ export type PhysiologicalState =
 
 /**
  * Calcula a Necessidade Energética Basal (RER / NEB):
- * RER = 70 * (Peso em kg ^ 0.75)
+ * - Cães: RER = 70 * (Peso em kg ^ 0.75) (NRC 2006 / Kleiber)
+ * - Gatos: RER = 100 * (Peso em kg ^ 0.67) (NRC 2006 Padrão Ouro para Felinos)
  */
-export function calculateRER(weightKg: number): number {
+export function calculateRER(weightKg: number, species: Species = 'CANINE'): number {
   if (weightKg <= 0) return 0;
+  if (species === 'FELINE') {
+    // Equação metabólica exponencial felina do NRC (2006)
+    return Math.round(100 * Math.pow(weightKg, 0.67));
+  }
   return Math.round(70 * Math.pow(weightKg, 0.75));
 }
 
@@ -40,13 +47,29 @@ export function estimateIdealWeight(currentWeightKg: number, bcs: BodyConditionS
   if (currentWeightKg <= 0) return 0;
   if (bcs === 5) return currentWeightKg;
   
-  // Fator: 1 + (BCS - 5) * 0.10
+  // Fator WSAVA: 1 + (BCS - 5) * 0.10
   const excessFactor = 1 + (bcs - 5) * 0.10;
   return Number((currentWeightKg / excessFactor).toFixed(1));
 }
 
 /**
- * Retorna o fator multiplicador do RER para obter o MER (NEM)
+ * Sugere o estado fisiológico ótimo inicial baseado no ECC e espécie
+ */
+export function getSuggestedPhysiologicalState(
+  species: Species, 
+  bcs: BodyConditionScore, 
+  isNeutered: boolean = true,
+  ageYears?: number
+): PhysiologicalState {
+  if (ageYears !== undefined && ageYears < 0.5) return 'GROWTH_YOUNG';
+  if (ageYears !== undefined && ageYears < 1.0) return 'GROWTH_OLDER';
+  if (bcs >= 6) return 'WEIGHT_LOSS';
+  if (ageYears !== undefined && ageYears >= 8) return 'SENIOR';
+  return isNeutered ? 'NEUTERED_ADULT' : 'INTACT_ADULT';
+}
+
+/**
+ * Retorna o fator multiplicador do RER para obter o MER (NEM) conforme diretrizes zootécnicas
  */
 export function getMERFactor(species: Species, state: PhysiologicalState): number {
   if (species === 'CANINE') {
@@ -54,7 +77,7 @@ export function getMERFactor(species: Species, state: PhysiologicalState): numbe
       case 'WEIGHT_LOSS': return 1.0; // 1.0 * RER no peso ideal
       case 'NEUTERED_ADULT': return 1.4; // 1.4 - 1.6 * RER
       case 'INTACT_ADULT': return 1.8;
-      case 'SENIOR': return 1.4;
+      case 'SENIOR': return 1.3;
       case 'GROWTH_YOUNG': return 3.0; // < 4 meses
       case 'GROWTH_OLDER': return 2.0; // > 4 meses
       case 'ACTIVE_WORK': return 2.5;
@@ -62,7 +85,7 @@ export function getMERFactor(species: Species, state: PhysiologicalState): numbe
   } else {
     // FELINE
     switch (state) {
-      case 'WEIGHT_LOSS': return 0.8; // 0.8 * RER no peso ideal (felinos requerem déficit controlado p/ evitar lipidose hepática)
+      case 'WEIGHT_LOSS': return 0.8; // 0.8 * RER no peso ideal (déficit controlado para proteção hepática)
       case 'NEUTERED_ADULT': return 1.2;
       case 'INTACT_ADULT': return 1.4;
       case 'SENIOR': return 1.1;
@@ -74,7 +97,26 @@ export function getMERFactor(species: Species, state: PhysiologicalState): numbe
 }
 
 /**
- * Cálculo completo das necessidades calóricas e hídricas do paciente
+ * Converte a porcentagem de um nutriente da Matéria Original (MO / base úmida) para a Base Matéria Seca (MS)
+ * Fórmula NRC / FEDIAF: % Nutriente na MS = (% Nutriente na MO / (100 - % Umidade)) * 100
+ */
+export function convertToDryMatter(nutrientOriginalPercent: number, moisturePercent: number): number {
+  const dryMatterPercent = 100 - moisturePercent;
+  if (dryMatterPercent <= 0) return 0;
+  return Number(((nutrientOriginalPercent / dryMatterPercent) * 100).toFixed(1));
+}
+
+/**
+ * Calcula a densidade de um nutriente expressa em gramas por 1000 kcal
+ * Métrica mandatória do NRC (2006) e FEDIAF para formulação clínica
+ */
+export function calculateGramsPer1000Kcal(nutrientGrams: number, totalKcal: number): number {
+  if (totalKcal <= 0) return 0;
+  return Number(((nutrientGrams / totalKcal) * 1000).toFixed(1));
+}
+
+/**
+ * Cálculo completo das necessidades calóricas, hídricas e zootécnicas do paciente
  */
 export function calculateEnergyRequirements(params: {
   species: Species;
@@ -90,17 +132,21 @@ export function calculateEnergyRequirements(params: {
   // Para perda de peso, o RER deve ser calculado com base no peso meta/ideal!
   const calculationWeight = state === 'WEIGHT_LOSS' ? idealWeight : weightKg;
 
-  const rer = calculateRER(calculationWeight);
+  const rer = calculateRER(calculationWeight, species);
   const factor = getMERFactor(species, state);
   const mer = Math.round(rer * factor);
 
-  // Hidratação diária: ~50-60ml/kg ou 1ml por kcal ingerida
-  const hydration = Math.round(mer * 1.0);
+  // Hidratação diária de manutenção: ~50-60ml/kg ou 1ml por kcal ingerida (mínimo zootécnico)
+  const hydration = Math.round(Math.max(weightKg * 50, mer * 1.0));
+
+  const notes: string[] = [];
 
   // Perda de peso saudável recomendada:
   // Cães: 1.0% a 2.0% do peso corporal por semana
-  // Gatos: 0.5% a 1.5% do peso corporal por semana (conservador p/ evitar lipidose)
+  // Gatos: 0.5% a 1.5% do peso corporal por semana (conservador p/ evitar lipidose hepática)
   let target_daily_loss_grams: { min: number; max: number } | undefined;
+  let hepatic_lipidosis_risk = false;
+
   if (state === 'WEIGHT_LOSS' && weightKg > idealWeight) {
     const weeklyMinPercent = species === 'CANINE' ? 0.01 : 0.005;
     const weeklyMaxPercent = species === 'CANINE' ? 0.02 : 0.015;
@@ -109,6 +155,16 @@ export function calculateEnergyRequirements(params: {
     const maxGramsPerDay = Math.round((weightKg * 1000 * weeklyMaxPercent) / 7);
 
     target_daily_loss_grams = { min: minGramsPerDay, max: maxGramsPerDay };
+
+    if (species === 'FELINE') {
+      notes.push("Alerta Zootécnico: Perda de peso felina monitorada (máximo 1.5%/semana) para prevenção de Lipidose Hepática.");
+      if (mer < calculateRER(weightKg, 'FELINE') * 0.70) {
+        hepatic_lipidosis_risk = true;
+        notes.push("AVISO CRÍTICO: Ingestão calórica inferior a 70% do RER do peso atual. Risco iminente de mobilização excessiva de triglicerídeos e infiltração gordurosa hepática!");
+      }
+    } else {
+      notes.push("Protocolo Canino de Restrição Calórica Segura: Alvo de 1% a 2% de perda semanal com preservação de massa magra.");
+    }
   }
 
   return {
@@ -118,17 +174,19 @@ export function calculateEnergyRequirements(params: {
     hydration_ml_day: hydration,
     ideal_weight_estimate_kg: idealWeight,
     target_daily_loss_grams,
+    hepatic_lipidosis_risk,
+    zootecnic_notes: notes,
   };
 }
 
 /**
- * Descrição clínica do Escore de Condição Corporal
+ * Descrição clínica do Escore de Condição Corporal (WSAVA 1-9)
  */
 export function getBCSDescription(bcs: BodyConditionScore): { label: string; status: 'UNDERWEIGHT' | 'IDEAL' | 'OVERWEIGHT' | 'OBESE' } {
-  if (bcs <= 3) return { label: 'Abaixo do peso ideal / Costelas e ossos proeminentes', status: 'UNDERWEIGHT' };
+  if (bcs <= 3) return { label: 'Abaixo do peso ideal / Costelas e ossos proeminentes (Emaciação)', status: 'UNDERWEIGHT' };
   if (bcs === 4) return { label: 'Abaixo do ideal leve / Cintura bem marcada', status: 'UNDERWEIGHT' };
-  if (bcs === 5) return { label: 'Peso Ideal / Costelas palpáveis sem excesso de gordura', status: 'IDEAL' };
+  if (bcs === 5) return { label: 'Peso Ideal / Costelas facilmente palpáveis com fina cobertura adiposa', status: 'IDEAL' };
   if (bcs === 6) return { label: 'Sobrepeso leve / Costelas palpáveis com discreta capa de gordura', status: 'OVERWEIGHT' };
-  if (bcs === 7) return { label: 'Sobrepeso evidente / Perda da linha de cintura', status: 'OVERWEIGHT' };
-  return { label: 'Obesidade / Depósitos volumosos de gordura lombar e abdominal', status: 'OBESE' };
+  if (bcs === 7) return { label: 'Sobrepeso evidente / Perda da linha de cintura vista dorsalmente', status: 'OVERWEIGHT' };
+  return { label: 'Obesidade / Depósitos volumosos de gordura lombar e distensão abdominal', status: 'OBESE' };
 }

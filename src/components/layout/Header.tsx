@@ -1,4 +1,4 @@
-"useRef";
+"use client";
 import React from "react";
 import { Activity, ShieldCheck, HeartPulse, User } from "lucide-react";
 
