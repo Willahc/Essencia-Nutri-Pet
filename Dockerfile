@@ -23,7 +23,11 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV DATABASE_URL="file:/app/prisma/dev.db"
 RUN npx prisma generate
+RUN npx prisma db push --accept-data-loss --skip-generate
+RUN npx tsx prisma/seed.ts
+RUN cp prisma/dev.db prisma/dev.db.template
 RUN npm run build
 
 # 4. Runner de Produção Otimizado (Standalone)
@@ -33,24 +37,29 @@ ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV DATABASE_URL="file:/app/prisma/dev.db"
 
 # Usuário de sistema sem privilégios de root para segurança
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# Copia arquivos estáticos, standalone server e scripts necessários
+# Copia arquivos estáticos, standalone server, banco e scripts necessários
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/scripts ./scripts
-COPY --from=builder /app/prisma ./prisma
+COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
+COPY --from=builder --chown=nextjs:nodejs /app/docker-entrypoint.sh ./docker-entrypoint.sh
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 # Cria diretórios de dados com permissões corretas
 RUN mkdir -p /app/prisma && chown -R nextjs:nodejs /app/prisma
 RUN mkdir -p /app/public/exams && chown -R nextjs:nodejs /app/public/exams
+RUN chmod +x /app/docker-entrypoint.sh
 
 USER nextjs
 
 EXPOSE 3000
 
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
 CMD ["node", "server.js"]
+

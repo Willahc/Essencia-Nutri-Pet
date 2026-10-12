@@ -124,8 +124,24 @@ chmod +x deploy.sh
 sudo ./deploy.sh
 ```
 
+## ☁️ Como Fazer Deploy no Render (1-Clique via GitHub)
+
+Você pode implantar a aplicação gratuitamente no **Render** com HTTPS automático e banco de dados SQLite pré-populado com os 49 pets e 56 exames:
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/Willahc/Essencia-Nutri-Pet)
+
+### Passo a Passo no Render Dashboard:
+1. Acesse [dashboard.render.com](https://dashboard.render.com) e faça login com sua conta do GitHub.
+2. Clique em **New +** > **Blueprint** (ou clique no botão acima).
+3. Conecte o repositório `Willahc/Essencia-Nutri-Pet`.
+4. O Render detectará automaticamente o arquivo [`render.yaml`](render.yaml) com o ambiente Docker, portas e inicialização configurados.
+5. (Opcional) Caso deseje habilitar a extração automática de exames por IA, adicione a variável `ANTHROPIC_API_KEY` com sua chave da Anthropic.
+6. Clique em **Apply** / **Create Web Service**.
+7. Após o build (~2 min), sua URL pública estará pronta (ex: `https://essencia-nutri-pet.onrender.com`).
+
 ---
 
 ## 📜 Licença
 
 Proprietário © Essência Nutri Pet. Todos os direitos reservados.
+
