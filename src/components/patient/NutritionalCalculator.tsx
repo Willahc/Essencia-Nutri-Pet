@@ -26,23 +26,23 @@ export function NutritionalCalculator({ patient }: NutritionalCalculatorProps) {
   const bcsDetails = getBCSDescription(bcs);
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center space-x-3">
-          <div className="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
-            <Calculator className="w-5 h-5" />
+    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 sm:mb-6">
+        <div className="flex items-center space-x-2.5 sm:space-x-3">
+          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+            <Calculator className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
           <div>
-            <h3 className="font-bold text-slate-800 text-lg">Calculadora Zootécnica de Requerimentos</h3>
-            <p className="text-xs text-slate-500">Diretrizes NRC 2006 & WSAVA • Cálculo Energético e Hídrico</p>
+            <h3 className="font-bold text-slate-800 text-base sm:text-lg">Calculadora de Requerimentos</h3>
+            <p className="text-[11px] sm:text-xs text-slate-500">Diretrizes NRC 2006 & WSAVA • Cálculo Energético e Hídrico</p>
           </div>
         </div>
-        <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+        <span className="self-start sm:self-auto text-[11px] sm:text-xs font-semibold px-2.5 py-0.5 sm:py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
           Zootecnia Clínica
         </span>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
         {/* Parâmetros de Entrada */}
         <div className="space-y-4">
           <div>
@@ -121,16 +121,16 @@ export function NutritionalCalculator({ patient }: NutritionalCalculatorProps) {
         </div>
 
         {/* Resultados Calculados */}
-        <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 text-white flex flex-col justify-between shadow-lg">
+        <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-4 sm:p-6 text-white flex flex-col justify-between shadow-lg">
           <div>
-            <div className="flex items-center justify-between pb-4 border-b border-slate-700/60 mb-5">
+            <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-slate-700/60 mb-4 sm:mb-5">
               <span className="text-xs font-medium text-slate-300 uppercase tracking-wider">Metabolismo Calculado</span>
               <span className="text-[11px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded border border-emerald-500/30">
                 Fator: {results.factor_used}x RER
               </span>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
               <div className="bg-slate-800/80 p-3.5 rounded-xl border border-slate-700/80">
                 <div className="flex items-center text-slate-400 text-xs mb-1">
                   <Flame className="w-3.5 h-3.5 mr-1 text-amber-400" />

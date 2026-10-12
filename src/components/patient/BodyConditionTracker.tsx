@@ -56,15 +56,15 @@ export function BodyConditionTracker({
   );
 
   return (
-    <div className="bg-white rounded-3xl border border-slate-200/90 shadow-sm p-6 sm:p-8 space-y-8 animate-fade-in">
+    <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/90 shadow-sm p-4 sm:p-8 space-y-6 sm:space-y-8 animate-fade-in">
       {/* 1. CABEÇALHO DO GUIA DE ECC */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-slate-100 pb-6">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-slate-100 pb-5 sm:pb-6">
         <div>
           <div className="flex items-center space-x-2.5">
-            <span className="p-2 rounded-2xl bg-amber-100 text-amber-800">
+            <span className="p-2 rounded-2xl bg-amber-100 text-amber-800 shrink-0">
               <Scale className="w-5 h-5" />
             </span>
-            <h3 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
+            <h3 className="text-base sm:text-xl font-black text-slate-900 tracking-tight">
               Escore de Condição Corporal (ECC 1 a 9) & Projeção de Saúde
             </h3>
           </div>
@@ -74,17 +74,17 @@ export function BodyConditionTracker({
         </div>
 
         {/* Badge do Status Atual do Pet */}
-        <div className="flex items-center space-x-3 bg-slate-50 border border-slate-200/80 px-4 py-2.5 rounded-2xl shrink-0">
-          <div className="text-right">
+        <div className="flex items-center space-x-3 bg-slate-50 border border-slate-200/80 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-2xl shrink-0 self-start md:self-auto">
+          <div className="text-left md:text-right">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
               Escore Atual Avaliado:
             </span>
-            <span className="text-sm font-black text-slate-900">
+            <span className="text-xs sm:text-sm font-black text-slate-900">
               ECC {currentBcs}/9 • {currentDef.category}
             </span>
           </div>
           <span
-            className={`w-9 h-9 rounded-xl flex items-center justify-center font-black text-sm text-white ${
+            className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center font-black text-xs sm:text-sm text-white shrink-0 ${
               currentBcs <= 3
                 ? "bg-purple-600"
                 : currentBcs <= 5
@@ -102,14 +102,14 @@ export function BodyConditionTracker({
       {/* 2. RÉGUA GRÁFICA INTERATIVA DE 9 PONTOS */}
       <div className="space-y-4">
         <div className="flex items-center justify-between text-xs font-bold text-slate-700">
-          <span>Escala Morfológica WSAVA (Clique em qualquer ponto para auditar anatomia e palpação):</span>
+          <span>Escala Morfológica WSAVA (Clique para auditar):</span>
           <span className="text-emerald-700 font-extrabold text-[11px] hidden sm:block">
             ★ Meta Fisiológica: ECC 4 a 5 (Peso Ideal)
           </span>
         </div>
 
         {/* Grid dos 9 Pontos */}
-        <div className="grid grid-cols-3 sm:grid-cols-9 gap-2">
+        <div className="grid grid-cols-3 sm:grid-cols-9 gap-1.5 sm:gap-2">
           {([1, 2, 3, 4, 5, 6, 7, 8, 9] as BodyConditionScore[]).map((score) => {
             const def = BCS_9_POINT_DEFINITIONS[score];
             const isCurrent = score === currentBcs;
@@ -140,28 +140,28 @@ export function BodyConditionTracker({
                 key={score}
                 type="button"
                 onClick={() => setSelectedScore(score)}
-                className={`p-3 rounded-2xl border text-center transition-all relative flex flex-col items-center justify-between min-h-[96px] ${bgColor} ${
+                className={`p-2 sm:p-3 rounded-xl sm:rounded-2xl border text-center transition-all relative flex flex-col items-center justify-between min-h-[84px] sm:min-h-[96px] ${bgColor} ${
                   isSelected ? "ring-2 ring-offset-2 ring-slate-900 font-bold" : ""
                 }`}
               >
                 {/* Badges de Destaque */}
                 {isCurrent && (
-                  <span className="absolute -top-2 left-1/2 -translate-x-1/2 px-1.5 py-0.2 bg-slate-900 text-white text-[9px] font-black rounded-full uppercase tracking-wider whitespace-nowrap shadow-2xs">
+                  <span className="absolute -top-2 left-1/2 -translate-x-1/2 px-1.5 py-0.2 bg-slate-900 text-white text-[8px] sm:text-[9px] font-black rounded-full uppercase tracking-wider whitespace-nowrap shadow-2xs">
                     Hoje
                   </span>
                 )}
                 {isTarget && !isCurrent && (
-                  <span className="absolute -top-2 left-1/2 -translate-x-1/2 px-1.5 py-0.2 bg-emerald-700 text-white text-[9px] font-black rounded-full uppercase tracking-wider whitespace-nowrap shadow-2xs">
+                  <span className="absolute -top-2 left-1/2 -translate-x-1/2 px-1.5 py-0.2 bg-emerald-700 text-white text-[8px] sm:text-[9px] font-black rounded-full uppercase tracking-wider whitespace-nowrap shadow-2xs">
                     Meta ★
                   </span>
                 )}
 
-                <span className="text-xl font-black">{score}</span>
-                <span className="text-[10px] font-bold line-clamp-1 leading-tight mt-1">
+                <span className="text-lg sm:text-xl font-black">{score}</span>
+                <span className="text-[9px] sm:text-[10px] font-bold line-clamp-1 leading-tight mt-0.5">
                   {def.category}
                 </span>
-                <span className="text-[9px] opacity-80 font-mono mt-1">
-                  {def.weightPercentageOfIdeal}% do ideal
+                <span className="text-[8px] sm:text-[9px] opacity-80 font-mono mt-0.5">
+                  {def.weightPercentageOfIdeal}%
                 </span>
               </button>
             );
@@ -169,18 +169,19 @@ export function BodyConditionTracker({
         </div>
 
         {/* Faixas Coloridas de Orientação */}
-        <div className="grid grid-cols-3 gap-2 text-center text-[10px] font-bold pt-1">
-          <div className="p-1 rounded-lg bg-purple-100 text-purple-800 border border-purple-200/60">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5 sm:gap-2 text-center text-[10px] sm:text-xs font-bold pt-1">
+          <div className="p-1.5 sm:p-1 rounded-lg bg-purple-100 text-purple-800 border border-purple-200/60">
             ECC 1 a 3 • Abaixo do Peso (Magreza/Caquexia)
           </div>
-          <div className="p-1 rounded-lg bg-emerald-100 text-emerald-800 border border-emerald-200/60">
+          <div className="p-1.5 sm:p-1 rounded-lg bg-emerald-100 text-emerald-800 border border-emerald-200/60">
             ECC 4 a 5 • Faixa Fisiológica Ideal (Longevidade)
           </div>
-          <div className="p-1 rounded-lg bg-rose-100 text-rose-800 border border-rose-200/60">
+          <div className="p-1.5 sm:p-1 rounded-lg bg-rose-100 text-rose-800 border border-rose-200/60">
             ECC 6 a 9 • Sobrepeso e Obesidade Clínica
           </div>
         </div>
       </div>
+
 
       {/* 3. CARD DE AUDITORIA ANATÔMICA DO SCORE SELECIONADO (O QUE VER & O QUE SENTIR) */}
       <div className="bg-slate-50/80 border border-slate-200 rounded-3xl p-5 sm:p-6 space-y-4">
@@ -274,41 +275,45 @@ export function BodyConditionTracker({
           </div>
 
           {/* Seletor de Período da Projeção */}
-          <div className="inline-flex bg-white p-1 rounded-2xl border border-emerald-200 text-xs font-bold shadow-2xs">
+          <div className="flex items-center bg-white p-1 rounded-2xl border border-emerald-200 text-xs font-bold shadow-2xs overflow-x-auto scrollbar-none w-full sm:w-auto">
             <button
               type="button"
               onClick={() => setProjectionWeeks(4)}
-              className={`px-3 py-1.5 rounded-xl transition-all ${
+              className={`flex-1 sm:flex-none px-2.5 sm:px-3 py-1.5 rounded-xl transition-all whitespace-nowrap min-h-[36px] ${
                 projectionWeeks === 4
                   ? "bg-emerald-600 text-white shadow-2xs"
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              1 Mês (4 Semanas)
+              <span className="inline sm:hidden">4 Semanas</span>
+              <span className="hidden sm:inline">1 Mês (4 Semanas)</span>
             </button>
             <button
               type="button"
               onClick={() => setProjectionWeeks(8)}
-              className={`px-3 py-1.5 rounded-xl transition-all ${
+              className={`flex-1 sm:flex-none px-2.5 sm:px-3 py-1.5 rounded-xl transition-all whitespace-nowrap min-h-[36px] ${
                 projectionWeeks === 8
                   ? "bg-emerald-600 text-white shadow-2xs"
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              2 Meses (8 Semanas)
+              <span className="inline sm:hidden">8 Semanas</span>
+              <span className="hidden sm:inline">2 Meses (8 Semanas)</span>
             </button>
             <button
               type="button"
               onClick={() => setProjectionWeeks(12)}
-              className={`px-3 py-1.5 rounded-xl transition-all ${
+              className={`flex-1 sm:flex-none px-2.5 sm:px-3 py-1.5 rounded-xl transition-all whitespace-nowrap min-h-[36px] ${
                 projectionWeeks === 12
                   ? "bg-emerald-600 text-white shadow-2xs"
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              3 Meses (12 Semanas)
+              <span className="inline sm:hidden">12 Semanas</span>
+              <span className="hidden sm:inline">3 Meses (12 Semanas)</span>
             </button>
           </div>
+
         </div>
 
         {/* COMPARAÇÃO LADO A LADO: HOJE VS NO PERÍODO PROJETADO */}

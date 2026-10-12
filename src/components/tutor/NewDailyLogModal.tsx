@@ -63,30 +63,31 @@ export function NewDailyLogModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto animate-fade-in">
-      <div className="bg-white rounded-3xl max-w-2xl w-full border border-slate-200 shadow-2xl overflow-hidden my-6">
+    <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 animate-fade-in">
+      <div className="bg-white rounded-2xl sm:rounded-3xl max-w-2xl w-full border border-slate-200 shadow-2xl overflow-hidden max-h-[92dvh] flex flex-col my-auto">
         {/* Cabeçalho */}
-        <div className="bg-gradient-to-r from-emerald-600 to-teal-700 p-6 text-white flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-xl">
+        <div className="bg-gradient-to-r from-emerald-600 to-teal-700 p-4 sm:p-6 text-white flex items-center justify-between shrink-0">
+          <div className="flex items-center space-x-2.5 sm:space-x-3">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-lg sm:text-xl shrink-0">
               📝
             </div>
             <div>
-              <h3 className="text-lg font-extrabold">Diário de Cuidado Diário</h3>
-              <p className="text-xs text-emerald-100">
-                Acompanhamento de {patient.name} • {patient.species === "CANINE" ? "Canino" : "Felino"} ({patient.current_weight_kg} kg)
+              <h3 className="text-base sm:text-lg font-extrabold">Diário de Cuidado Diário</h3>
+              <p className="text-[11px] sm:text-xs text-emerald-100 truncate">
+                {patient.name} • {patient.species === "CANINE" ? "Canino" : "Felino"} ({patient.current_weight_kg} kg)
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-white/80 hover:text-white rounded-xl hover:bg-white/10 transition-colors"
+            className="p-1.5 sm:p-2 text-white/80 hover:text-white rounded-xl hover:bg-white/10 transition-colors shrink-0"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-6 text-xs text-slate-700">
+        <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4 sm:space-y-6 text-xs text-slate-700 overflow-y-auto touch-scroll flex-1">
+
           {/* Data e Dia da Transição */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-200/80">
             <div>
@@ -139,7 +140,7 @@ export function NewDailyLogModal({
               </span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-5 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
               {([1, 2, 3, 4, 5] as StoolScore[]).map((score) => {
                 const def = STOOL_SCORE_DEFINITIONS[score];
                 const isSelected = stoolScore === score;
@@ -153,7 +154,7 @@ export function NewDailyLogModal({
                       isSelected
                         ? "border-emerald-600 bg-emerald-50/80 shadow-xs ring-2 ring-emerald-500/30"
                         : "border-slate-200 bg-white hover:bg-slate-50"
-                    }`}
+                    } ${score === 5 ? "col-span-2 sm:col-span-1" : ""}`}
                   >
                     <div>
                       <div className="flex items-center justify-between mb-1">
@@ -329,17 +330,17 @@ export function NewDailyLogModal({
           </div>
 
           {/* Botões do Rodapé */}
-          <div className="flex items-center justify-end space-x-3 pt-3 border-t border-slate-200">
+          <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2 sm:space-x-3 pt-3 border-t border-slate-200">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs transition-colors"
+              className="w-full sm:w-auto px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs transition-colors text-center"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs shadow-sm transition-colors flex items-center space-x-1.5"
+              className="w-full sm:w-auto px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs shadow-sm transition-colors flex items-center justify-center space-x-1.5"
             >
               <CheckCircle className="w-4 h-4" />
               <span>Salvar Registro de Hoje</span>

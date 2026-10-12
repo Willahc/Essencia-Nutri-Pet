@@ -176,45 +176,46 @@ export function TutorPortalView({
       )}
 
       {/* Boas-vindas ao Tutor */}
-      <div className="bg-gradient-to-r from-emerald-600 to-teal-700 rounded-3xl p-6 sm:p-8 text-white shadow-lg relative overflow-hidden">
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-          <div className="flex items-start space-x-4">
-            <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-4xl shadow-inner border border-white/20 shrink-0">
+      <div className="bg-gradient-to-r from-emerald-600 to-teal-700 rounded-2xl sm:rounded-3xl p-4 sm:p-8 text-white shadow-lg relative overflow-hidden">
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4 sm:gap-6">
+          <div className="flex items-start space-x-3 sm:space-x-4">
+            <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-3xl sm:text-4xl shadow-inner border border-white/20 shrink-0">
               {patient.avatar_url || "🐾"}
             </div>
             <div>
-              <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs font-semibold mb-2">
-                <Heart className="w-3.5 h-3.5 text-rose-300 fill-rose-300" />
-                <span>Portal do Tutor • Cuidado Contínuo Supervisionado</span>
+              <div className="inline-flex items-center space-x-1.5 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full bg-white/20 backdrop-blur-md text-[10px] sm:text-xs font-semibold mb-1.5 sm:mb-2">
+                <Heart className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-rose-300 fill-rose-300 shrink-0" />
+                <span>Portal do Tutor • Cuidado Contínuo</span>
               </div>
-              <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+              <h2 className="text-xl sm:text-3xl font-extrabold tracking-tight">
                 Olá, {tutor.name.split(" ")[0]}!
               </h2>
-              <p className="text-emerald-100 text-sm mt-1 max-w-xl">
+              <p className="text-emerald-100 text-xs sm:text-sm mt-1 max-w-xl">
                 Aqui estão as orientações nutricionais aprovadas para o cuidado diário do(a) <strong>{patient.name}</strong>.
               </p>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 w-full sm:w-auto">
             <button
               onClick={() => setIsLogModalOpen(true)}
-              className="px-4 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-white font-extrabold rounded-2xl text-xs shadow-md transition-all flex items-center space-x-2 border border-emerald-300/40"
+              className="w-full sm:w-auto px-4 py-2.5 bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-white font-extrabold rounded-xl sm:rounded-2xl text-xs shadow-md transition-all flex items-center justify-center space-x-2 border border-emerald-300/40 min-h-[42px]"
             >
-              <PlusCircle className="w-4 h-4" />
+              <PlusCircle className="w-4 h-4 shrink-0" />
               <span>{hasLoggedToday ? "Atualizar Diário de Hoje" : "Registrar Diário de Hoje"}</span>
             </button>
 
             <button
               onClick={onOpenReport}
-              className="px-4 py-2.5 bg-white text-emerald-800 hover:bg-emerald-50 rounded-2xl text-xs font-bold shadow-md transition-all flex items-center space-x-2"
+              className="w-full sm:w-auto px-4 py-2.5 bg-white text-emerald-800 hover:bg-emerald-50 active:bg-emerald-100 rounded-xl sm:rounded-2xl text-xs font-bold shadow-md transition-all flex items-center justify-center space-x-2 min-h-[42px]"
             >
-              <FileText className="w-4 h-4 text-emerald-600" />
+              <FileText className="w-4 h-4 text-emerald-600 shrink-0" />
               <span>Ver Laudo Oficial</span>
             </button>
           </div>
         </div>
       </div>
+
 
       {/* Alerta de Saúde se Houve Vômito ou Fezes Anormais */}
       {metrics.hasRecentAlert && (

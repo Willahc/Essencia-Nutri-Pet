@@ -59,28 +59,28 @@ export function DetectedPatientModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-xs p-4 overflow-y-auto">
-      <div className="bg-white rounded-3xl max-w-xl w-full shadow-2xl border border-slate-200 overflow-hidden animate-fadeIn">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-xs p-2 sm:p-4 animate-fade-in">
+      <div className="bg-white rounded-2xl sm:rounded-3xl max-w-xl w-full shadow-2xl border border-slate-200 overflow-hidden my-auto max-h-[92dvh] flex flex-col">
         {/* Cabeçalho do Modal */}
-        <div className="bg-gradient-to-r from-emerald-600 to-teal-700 px-6 py-5 text-white flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-xl shadow-inner">
+        <div className="bg-gradient-to-r from-emerald-600 to-teal-700 px-4 sm:px-6 py-4 sm:py-5 text-white flex items-center justify-between shrink-0">
+          <div className="flex items-center space-x-2.5 sm:space-x-3">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-lg sm:text-xl shadow-inner shrink-0">
               🐾
             </div>
             <div>
-              <div className="inline-flex items-center space-x-1 text-[11px] font-semibold bg-white/20 px-2.5 py-0.5 rounded-full mb-1">
+              <div className="inline-flex items-center space-x-1 text-[10px] sm:text-[11px] font-semibold bg-white/20 px-2.5 py-0.5 rounded-full mb-0.5">
                 <Sparkles className="w-3 h-3 text-amber-300" />
-                <span>IA Detectou Informações Cadastrais</span>
+                <span>IA Detectou Cadastro</span>
               </div>
-              <h3 className="font-extrabold text-lg text-white">Criar Pré-Cadastro do Animal</h3>
+              <h3 className="font-extrabold text-base sm:text-lg text-white">Criar Pré-Cadastro do Pet</h3>
             </div>
           </div>
-          <button onClick={onClose} className="p-1.5 text-white/80 hover:text-white rounded-lg">
+          <button onClick={onClose} className="p-1.5 text-white/80 hover:text-white rounded-lg shrink-0">
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4 overflow-y-auto touch-scroll flex-1">
           <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-xs text-emerald-900 leading-relaxed flex items-start space-x-2">
             <AlertCircle className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
             <div>
@@ -202,17 +202,17 @@ export function DetectedPatientModal({
             </div>
           </div>
 
-          <div className="flex items-center justify-end space-x-3 pt-4 border-t border-slate-200">
+          <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2 sm:space-x-3 pt-3 sm:pt-4 border-t border-slate-200">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100"
+              className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 text-center"
             >
               Ignorar Pré-Cadastro
             </button>
             <button
               type="submit"
-              className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-md flex items-center space-x-1.5 transition-all"
+              className="w-full sm:w-auto px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-md flex items-center justify-center space-x-1.5 transition-all"
             >
               <Check className="w-4 h-4" />
               <span>Criar Ficha & Abrir Paciente</span>

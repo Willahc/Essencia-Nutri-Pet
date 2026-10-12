@@ -97,15 +97,15 @@ export function AdminEpidemiologyDashboard({
   return (
     <div className="space-y-8 animate-fade-in">
       {/* 1. TOPO: TÍTULO INSTITUCIONAL & AÇÕES EXECUTIVAS */}
-      <div className="bg-white rounded-3xl border border-slate-200/90 shadow-sm p-6 sm:p-8">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-slate-100 pb-6 mb-6">
+      <div className="bg-white rounded-3xl border border-slate-200/90 shadow-sm p-4 sm:p-6 lg:p-8">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-slate-100 pb-4 sm:pb-6 mb-4 sm:mb-6">
           <div className="space-y-1">
             <div className="flex items-center space-x-2.5">
-              <span className="p-2 rounded-xl bg-emerald-100/80 text-emerald-800">
+              <span className="p-2 rounded-xl bg-emerald-100/80 text-emerald-800 shrink-0">
                 <BarChart3 className="w-5 h-5" />
               </span>
-              <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                Painel do Administrador • Censo de Deficiências & Patologias
+              <h2 className="text-lg sm:text-2xl font-black text-slate-900 tracking-tight">
+                Painel do Administrador • Censo Clínico
               </h2>
             </div>
             <p className="text-xs sm:text-sm text-slate-500">
@@ -117,7 +117,7 @@ export function AdminEpidemiologyDashboard({
           <div className="flex items-center space-x-3">
             <button
               onClick={() => window.print()}
-              className="px-3.5 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 flex items-center space-x-2 transition-colors shadow-2xs"
+              className="w-full sm:w-auto justify-center px-3.5 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 flex items-center space-x-2 transition-colors shadow-2xs"
             >
               <Printer className="w-4 h-4 text-slate-500" />
               <span>Imprimir Relatório</span>
@@ -126,7 +126,7 @@ export function AdminEpidemiologyDashboard({
         </div>
 
         {/* 2. KPIS GLOBAIS DE SAÚDE */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 min-[420px]:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {/* Total de Pets */}
           <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200/80">
             <div className="flex items-center justify-between text-xs text-slate-500 mb-2 font-medium">
@@ -210,10 +210,10 @@ export function AdminEpidemiologyDashboard({
       </div>
 
       {/* 3. COMPARATIVO EPIDEMIOLÓGICO: O QUE MAIS AFETA CANINOS VS FELINOS */}
-      <div className="bg-white rounded-3xl border border-slate-200/90 shadow-sm p-6 sm:p-8 space-y-6">
+      <div className="bg-white rounded-3xl border border-slate-200/90 shadow-sm p-4 sm:p-6 lg:p-8 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-100 pb-4">
           <div>
-            <h3 className="text-lg font-black text-slate-900 tracking-tight flex items-center">
+            <h3 className="text-base sm:text-lg font-black text-slate-900 tracking-tight flex items-center">
               <Stethoscope className="w-5 h-5 mr-2 text-teal-600" />
               O que mais afeta cada espécie? (Caninos vs. Felinos)
             </h3>
@@ -222,18 +222,18 @@ export function AdminEpidemiologyDashboard({
             </p>
           </div>
 
-          <div className="inline-flex bg-slate-100 p-1 rounded-xl text-xs font-bold">
+          <div className="flex flex-wrap sm:inline-flex bg-slate-100 p-1 rounded-xl text-xs font-bold gap-1">
             <button
               onClick={() => setSpeciesFilter("ALL")}
-              className={`px-3 py-1.5 rounded-lg transition-all ${
+              className={`flex-1 sm:flex-none px-3 py-1.5 rounded-lg transition-all text-center ${
                 speciesFilter === "ALL" ? "bg-white text-slate-900 shadow-2xs" : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              Comparativo Geral
+              Geral
             </button>
             <button
               onClick={() => setSpeciesFilter("CANINE")}
-              className={`px-3 py-1.5 rounded-lg transition-all ${
+              className={`flex-1 sm:flex-none px-3 py-1.5 rounded-lg transition-all text-center ${
                 speciesFilter === "CANINE" ? "bg-white text-slate-900 shadow-2xs" : "text-slate-600 hover:text-slate-900"
               }`}
             >
@@ -241,7 +241,7 @@ export function AdminEpidemiologyDashboard({
             </button>
             <button
               onClick={() => setSpeciesFilter("FELINE")}
-              className={`px-3 py-1.5 rounded-lg transition-all ${
+              className={`flex-1 sm:flex-none px-3 py-1.5 rounded-lg transition-all text-center ${
                 speciesFilter === "FELINE" ? "bg-white text-slate-900 shadow-2xs" : "text-slate-600 hover:text-slate-900"
               }`}
             >
@@ -391,23 +391,23 @@ export function AdminEpidemiologyDashboard({
 
         {/* TABELA COMPARATIVA DE PREVALÊNCIA POR CATEGORIA CLÍNICA */}
         <div className="border border-slate-200 rounded-2xl overflow-hidden shadow-2xs mt-4">
-          <div className="bg-slate-50 px-4 py-3 border-b border-slate-200 flex items-center justify-between">
+          <div className="bg-slate-50 px-4 py-3 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
             <span className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center">
               <FileSpreadsheet className="w-4 h-4 mr-1.5 text-emerald-600" />
-              Comparativo Sistêmico por Categoria Clínica & Conduta Zootécnica
+              Comparativo Sistêmico por Categoria Clínica
             </span>
-            <span className="text-[10px] text-slate-500">Percentual de acometimento em relação ao total de cada espécie</span>
+            <span className="text-[10px] text-slate-500">Percentual em relação ao total da espécie</span>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
+          <div className="overflow-x-auto scrollbar-none touch-scroll">
+            <table className="w-full text-left text-xs min-w-[680px]">
               <thead className="bg-slate-100/60 border-b border-slate-200 text-slate-500 uppercase text-[10px]">
                 <tr>
                   <th className="px-4 py-3 font-semibold">Sistema / Categoria</th>
                   <th className="px-4 py-3 font-semibold text-center whitespace-nowrap">Caninos (Prevalência)</th>
                   <th className="px-4 py-3 font-semibold text-center whitespace-nowrap">Felinos (Prevalência)</th>
                   <th className="px-4 py-3 font-semibold text-center whitespace-nowrap">Espécie Mais Afetada</th>
-                  <th className="px-4 py-3 font-semibold">Manejo Zootécnico & Nutricional Recomendado</th>
+                  <th className="px-4 py-3 font-semibold">Manejo Zootécnico & Nutricional</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-slate-700">
@@ -462,10 +462,10 @@ export function AdminEpidemiologyDashboard({
       </div>
 
       {/* 4. PAINEL DE ACOMPANHAMENTO INDIVIDUAL PACIENTE POR PACIENTE */}
-      <div className="bg-white rounded-3xl border border-slate-200/90 shadow-sm p-6 sm:p-8 space-y-6">
+      <div className="bg-white rounded-3xl border border-slate-200/90 shadow-sm p-4 sm:p-6 lg:p-8 space-y-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-slate-100 pb-4">
           <div>
-            <h3 className="text-lg font-black text-slate-900 tracking-tight flex items-center">
+            <h3 className="text-base sm:text-lg font-black text-slate-900 tracking-tight flex items-center">
               <Users className="w-5 h-5 mr-2 text-emerald-600" />
               Monitor Individual de Pacientes ({filteredProfiles.length} listados)
             </h3>

@@ -55,8 +55,10 @@ export function ExamReviewSideBySide({
   const [isFullscreenModalOpen, setIsFullscreenModalOpen] = useState<boolean>(false);
   const [isReferralModalOpen, setIsReferralModalOpen] = useState<boolean>(false);
   const [copiedReferral, setCopiedReferral] = useState<boolean>(false);
+  const [mobileTab, setMobileTab] = useState<"DOCUMENT" | "RESULTS">("RESULTS");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
 
   // Sincroniza estado interno quando o paciente ou exame mudar
   useEffect(() => {
@@ -344,10 +346,40 @@ export function ExamReviewSideBySide({
         </div>
       </div>
 
+      {/* Seletor Mobile: Documento vs Parâmetros Extraídos */}
+      <div className="flex lg:hidden items-center bg-slate-100 p-1 rounded-xl mb-4 border border-slate-200">
+        <button
+          type="button"
+          onClick={() => setMobileTab("RESULTS")}
+          className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center space-x-1.5 min-h-[38px] ${
+            mobileTab === "RESULTS"
+              ? "bg-white text-slate-900 shadow-2xs"
+              : "text-slate-600 hover:text-slate-900"
+          }`}
+        >
+          <Sparkles className="w-3.5 h-3.5 text-purple-600" />
+          <span>Parâmetros ({results.length})</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setMobileTab("DOCUMENT")}
+          className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center space-x-1.5 min-h-[38px] ${
+            mobileTab === "DOCUMENT"
+              ? "bg-white text-slate-900 shadow-2xs"
+              : "text-slate-600 hover:text-slate-900"
+          }`}
+        >
+          <FileText className="w-3.5 h-3.5 text-slate-600" />
+          <span>Ver Laudo Original</span>
+        </button>
+      </div>
+
       {/* Grid Side-by-Side: Documento x Dados Estruturados */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Painel do Documento Original - Visualizador Integrado */}
-        <div className="lg:col-span-5 bg-slate-900 rounded-2xl p-4 text-slate-300 flex flex-col justify-between shadow-inner border border-slate-800">
+        <div className={`lg:col-span-5 bg-slate-900 rounded-2xl p-3.5 sm:p-4 text-slate-300 flex-col justify-between shadow-inner border border-slate-800 ${
+          mobileTab === "DOCUMENT" ? "flex" : "hidden lg:flex"
+        }`}>
           <div>
             <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-3">
               <div className="flex items-center space-x-2">
@@ -396,7 +428,7 @@ export function ExamReviewSideBySide({
             </div>
 
             {/* Container do Documento (Iframe para PDF ou Imagem) */}
-            <div className="w-full h-[520px] rounded-xl overflow-hidden border border-slate-800 bg-white relative shadow-inner">
+            <div className="w-full h-[360px] sm:h-[460px] lg:h-[520px] rounded-xl overflow-hidden border border-slate-800 bg-white relative shadow-inner">
               {isImageFile ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -429,7 +461,10 @@ export function ExamReviewSideBySide({
         </div>
 
         {/* Tabela de Parâmetros Extraídos */}
-        <div className="lg:col-span-7 flex flex-col justify-between">
+        <div className={`lg:col-span-7 flex-col justify-between ${
+          mobileTab === "RESULTS" ? "flex" : "hidden lg:flex"
+        }`}>
+
           <div>
             {/* ALERTA PREVENTIVO DE VISITA VETERINÁRIA */}
             {referralAlert.hasAlert && (
@@ -569,8 +604,9 @@ export function ExamReviewSideBySide({
               </div>
             )}
 
-            <div className="border border-slate-200 rounded-xl overflow-hidden shadow-2xs mb-4">
-              <table className="w-full text-left text-xs">
+            <div className="border border-slate-200 rounded-xl overflow-x-auto scrollbar-none touch-scroll shadow-2xs mb-4">
+              <table className="w-full text-left text-xs min-w-[500px]">
+
                 <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-[10px] tracking-wider">
                   <tr>
                     <th className="px-4 py-3 font-semibold">Marcador / Parâmetro</th>

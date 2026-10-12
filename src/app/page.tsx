@@ -535,173 +535,199 @@ export default function Home() {
     <div className="min-h-screen flex flex-col bg-slate-50">
       <Header />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-3.5 sm:py-8">
         {/* Barra de Alternância de Papéis (Dual B2B2C) e Pacientes */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 sm:gap-4 mb-4 sm:mb-6 bg-white p-3 sm:p-4 rounded-2xl border border-slate-200/80 shadow-xs">
           {/* Seletor de Perfil (Admin vs Profissional vs Tutor) */}
-          <div className="flex items-center space-x-3">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Modo de Acesso:</span>
-            <div className="inline-flex bg-slate-100 p-1 rounded-xl border border-slate-200 overflow-x-auto">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:space-x-3 w-full md:w-auto">
+            <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider shrink-0">
+              Modo de Acesso:
+            </span>
+            <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 overflow-x-auto scrollbar-none touch-scroll w-full sm:w-auto">
               <button
                 onClick={() => setViewMode("ADMIN")}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1.5 transition-all whitespace-nowrap ${
+                className={`flex-1 sm:flex-none px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold flex items-center justify-center space-x-1.5 transition-all whitespace-nowrap min-h-[36px] ${
                   viewMode === "ADMIN"
                     ? "bg-purple-700 text-white shadow-xs"
                     : "text-slate-600 hover:text-slate-900"
                 }`}
               >
-                <BarChart3 className="w-3.5 h-3.5" />
-                <span>Administrador (Censo & Deficiências)</span>
+                <BarChart3 className="w-3.5 h-3.5 shrink-0" />
+                <span className="inline sm:hidden">Censo</span>
+                <span className="hidden sm:inline">Administrador (Censo & Deficiências)</span>
               </button>
 
               <button
                 onClick={() => setViewMode("PROFESSIONAL")}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1.5 transition-all whitespace-nowrap ${
+                className={`flex-1 sm:flex-none px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold flex items-center justify-center space-x-1.5 transition-all whitespace-nowrap min-h-[36px] ${
                   viewMode === "PROFESSIONAL"
                     ? "bg-emerald-600 text-white shadow-xs"
                     : "text-slate-600 hover:text-slate-900"
                 }`}
               >
-                <User className="w-3.5 h-3.5" />
-                <span>Profissional (Zootecnista / Nutrólogo)</span>
+                <User className="w-3.5 h-3.5 shrink-0" />
+                <span className="inline sm:hidden">Clínico</span>
+                <span className="hidden sm:inline">Profissional (Zootecnista / Nutrólogo)</span>
               </button>
 
               <button
                 onClick={() => setViewMode("TUTOR")}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1.5 transition-all whitespace-nowrap ${
+                className={`flex-1 sm:flex-none px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold flex items-center justify-center space-x-1.5 transition-all whitespace-nowrap min-h-[36px] ${
                   viewMode === "TUTOR"
                     ? "bg-teal-600 text-white shadow-xs"
                     : "text-slate-600 hover:text-slate-900"
                 }`}
               >
-                <Eye className="w-3.5 h-3.5" />
-                <span>Visão do Tutor ({tutor.name.split(" ")[0]})</span>
+                <Eye className="w-3.5 h-3.5 shrink-0" />
+                <span>Tutor ({tutor.name.split(" ")[0]})</span>
               </button>
             </div>
           </div>
 
           {/* Seletor Avançado de Paciente ou Status do Censo */}
           {viewMode === "ADMIN" ? (
-            <div className="flex items-center space-x-2 px-3.5 py-2 bg-purple-50 border border-purple-200 rounded-xl text-xs font-bold text-purple-900 shadow-2xs">
+            <div className="flex items-center space-x-2 px-3 py-2 bg-purple-50 border border-purple-200 rounded-xl text-xs font-bold text-purple-900 shadow-2xs self-start md:self-auto">
               <span className="text-base">📊</span>
               <span>Censo Geral Clínico ({patients.length} pets)</span>
             </div>
           ) : (
-            <div className="relative">
-            <button
-              type="button"
-              onClick={() => setIsPatientDropdownOpen(!isPatientDropdownOpen)}
-              className="flex items-center space-x-2.5 px-3.5 py-2 bg-slate-100 hover:bg-slate-200/80 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 transition-all shadow-2xs"
-            >
-              <span className="text-base">{patient.avatar_url || (patient.species === 'CANINE' ? '🐕' : '🐈')}</span>
-              <div className="text-left">
-                <span className="block font-black text-slate-900">{patient.name}</span>
-                <span className="text-[10px] text-slate-500 font-normal">
-                  {patient.breed} • {tutor.name.split(" ")[0]} ({patientExams.length} {patientExams.length === 1 ? 'laudo' : 'laudos'})
-                </span>
-              </div>
-              <ChevronDown className="w-3.5 h-3.5 text-slate-500 ml-1" />
-            </button>
-
-            {/* Dropdown / Popover de Seleção com Busca */}
-            {isPatientDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-xl border border-slate-200 z-50 overflow-hidden animate-fadeIn">
-                {/* Cabeçalho do Dropdown com Busca e Filtros */}
-                <div className="p-3 bg-slate-50 border-b border-slate-200 space-y-2">
-                  <div className="relative">
-                    <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-400" />
-                    <input
-                      type="text"
-                      value={petSearchQuery}
-                      onChange={(e) => setPetSearchQuery(e.target.value)}
-                      placeholder="Buscar por pet, raça ou tutor..."
-                      className="w-full pl-8 pr-3 py-1.5 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                      autoFocus
-                    />
-                  </div>
-
-                  <div className="flex items-center space-x-1 text-[11px]">
-                    <button
-                      type="button"
-                      onClick={() => setSpeciesFilter("ALL")}
-                      className={`px-2.5 py-1 rounded-lg font-bold transition-all ${
-                        speciesFilter === "ALL" ? "bg-emerald-600 text-white" : "bg-white text-slate-600 hover:bg-slate-200"
-                      }`}
-                    >
-                      Todos ({patients.length})
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setSpeciesFilter("CANINE")}
-                      className={`px-2.5 py-1 rounded-lg font-bold transition-all ${
-                        speciesFilter === "CANINE" ? "bg-emerald-600 text-white" : "bg-white text-slate-600 hover:bg-slate-200"
-                      }`}
-                    >
-                      🐶 Cães ({canineCount})
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setSpeciesFilter("FELINE")}
-                      className={`px-2.5 py-1 rounded-lg font-bold transition-all ${
-                        speciesFilter === "FELINE" ? "bg-emerald-600 text-white" : "bg-white text-slate-600 hover:bg-slate-200"
-                      }`}
-                    >
-                      🐱 Gatos ({felineCount})
-                    </button>
+            <div className="relative w-full md:w-auto">
+              <button
+                type="button"
+                onClick={() => setIsPatientDropdownOpen(!isPatientDropdownOpen)}
+                className="w-full md:w-auto flex items-center justify-between sm:justify-start space-x-2.5 px-3.5 py-2 bg-slate-100 hover:bg-slate-200/80 active:bg-slate-200 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 transition-all shadow-2xs min-h-[44px]"
+              >
+                <div className="flex items-center space-x-2.5 truncate">
+                  <span className="text-base shrink-0">{patient.avatar_url || (patient.species === 'CANINE' ? '🐕' : '🐈')}</span>
+                  <div className="text-left truncate">
+                    <span className="block font-black text-slate-900 truncate">{patient.name}</span>
+                    <span className="text-[10px] text-slate-500 font-normal truncate block">
+                      {patient.breed} • {tutor.name.split(" ")[0]} ({patientExams.length} {patientExams.length === 1 ? 'laudo' : 'laudos'})
+                    </span>
                   </div>
                 </div>
+                <ChevronDown className="w-4 h-4 text-slate-500 ml-1 shrink-0" />
+              </button>
 
-                {/* Lista de Pacientes Filtrados */}
-                <div className="max-h-72 overflow-y-auto divide-y divide-slate-100 p-1">
-                  {filteredPatients.length === 0 ? (
-                    <div className="p-4 text-center text-xs text-slate-400">
-                      Nenhum paciente encontrado para &ldquo;{petSearchQuery}&rdquo;
+              {/* Backdrop para fechar no mobile */}
+              {isPatientDropdownOpen && (
+                <div 
+                  className="fixed inset-0 bg-slate-950/40 backdrop-blur-2xs z-40 sm:hidden" 
+                  onClick={() => setIsPatientDropdownOpen(false)} 
+                />
+              )}
+
+              {/* Dropdown / Popover de Seleção com Busca */}
+              {isPatientDropdownOpen && (
+                <div className="fixed inset-x-3 top-20 max-h-[80dvh] sm:static sm:inset-auto sm:absolute sm:right-0 sm:mt-2 w-auto sm:w-96 bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 overflow-hidden flex flex-col animate-fadeIn">
+                  {/* Cabeçalho do Dropdown com Busca e Filtros */}
+                  <div className="p-3 bg-slate-50 border-b border-slate-200 space-y-2 shrink-0">
+                    <div className="flex items-center justify-between sm:hidden pb-1 border-b border-slate-200">
+                      <span className="text-xs font-bold text-slate-800">Selecione o Paciente</span>
+                      <button 
+                        type="button" 
+                        onClick={() => setIsPatientDropdownOpen(false)}
+                        className="p-1 rounded-lg text-slate-500 hover:bg-slate-200"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
                     </div>
-                  ) : (
-                    filteredPatients.map((p) => {
-                      const isSelected = p.id === patient.id;
-                      const petExCount = exams.filter((e) => e.patient_id === p.id).length;
-                      const petTutor = tutors.find((t) => t.id === p.tutor_id);
-                      return (
-                        <button
-                          key={p.id}
-                          type="button"
-                          onClick={() => handleSelectPatient(p.id)}
-                          className={`w-full p-2.5 rounded-xl text-left flex items-center justify-between transition-colors ${
-                            isSelected ? "bg-emerald-50 text-emerald-950 font-bold" : "hover:bg-slate-50 text-slate-700"
-                          }`}
-                        >
-                          <div className="flex items-center space-x-2.5">
-                            <span className="text-xl">{p.avatar_url || (p.species === "CANINE" ? "🐕" : "🐈")}</span>
-                            <div>
-                              <div className="flex items-center space-x-1.5">
-                                <span className="font-bold text-xs text-slate-900">{p.name}</span>
-                                <span className="text-[10px] text-slate-400">({p.breed})</span>
-                              </div>
-                              <span className="text-[10px] text-slate-500 block">
-                                Tutor: {petTutor?.name.split(" ")[0]} • {p.current_weight_kg || "?"} kg
-                              </span>
-                            </div>
-                          </div>
 
-                          <div className="flex items-center space-x-1.5">
-                            {petExCount > 0 && (
-                              <span className="text-[10px] bg-purple-50 text-purple-700 font-semibold px-2 py-0.5 rounded-full border border-purple-200">
-                                {petExCount} {petExCount === 1 ? "laudo" : "laudos"}
-                              </span>
-                            )}
-                            {isSelected && <Check className="w-4 h-4 text-emerald-600 shrink-0" />}
-                          </div>
-                        </button>
-                      );
-                    })
-                  )}
+                    <div className="relative">
+                      <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-400" />
+                      <input
+                        type="text"
+                        value={petSearchQuery}
+                        onChange={(e) => setPetSearchQuery(e.target.value)}
+                        placeholder="Buscar por pet, raça ou tutor..."
+                        className="w-full pl-8 pr-3 py-1.5 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        autoFocus
+                      />
+                    </div>
+
+                    <div className="flex items-center space-x-1 text-[11px] overflow-x-auto scrollbar-none">
+                      <button
+                        type="button"
+                        onClick={() => setSpeciesFilter("ALL")}
+                        className={`px-2.5 py-1 rounded-lg font-bold transition-all whitespace-nowrap ${
+                          speciesFilter === "ALL" ? "bg-emerald-600 text-white" : "bg-white text-slate-600 hover:bg-slate-200"
+                        }`}
+                      >
+                        Todos ({patients.length})
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setSpeciesFilter("CANINE")}
+                        className={`px-2.5 py-1 rounded-lg font-bold transition-all whitespace-nowrap ${
+                          speciesFilter === "CANINE" ? "bg-emerald-600 text-white" : "bg-white text-slate-600 hover:bg-slate-200"
+                        }`}
+                      >
+                        🐶 Cães ({canineCount})
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setSpeciesFilter("FELINE")}
+                        className={`px-2.5 py-1 rounded-lg font-bold transition-all whitespace-nowrap ${
+                          speciesFilter === "FELINE" ? "bg-emerald-600 text-white" : "bg-white text-slate-600 hover:bg-slate-200"
+                        }`}
+                      >
+                        🐱 Gatos ({felineCount})
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Lista de Pacientes Filtrados */}
+                  <div className="max-h-72 sm:max-h-80 overflow-y-auto divide-y divide-slate-100 p-1 touch-scroll">
+                    {filteredPatients.length === 0 ? (
+                      <div className="p-4 text-center text-xs text-slate-400">
+                        Nenhum paciente encontrado para &ldquo;{petSearchQuery}&rdquo;
+                      </div>
+                    ) : (
+                      filteredPatients.map((p) => {
+                        const isSelected = p.id === patient.id;
+                        const petExCount = exams.filter((e) => e.patient_id === p.id).length;
+                        const petTutor = tutors.find((t) => t.id === p.tutor_id);
+                        return (
+                          <button
+                            key={p.id}
+                            type="button"
+                            onClick={() => handleSelectPatient(p.id)}
+                            className={`w-full p-2.5 rounded-xl text-left flex items-center justify-between transition-colors min-h-[48px] ${
+                              isSelected ? "bg-emerald-50 text-emerald-950 font-bold" : "hover:bg-slate-50 text-slate-700"
+                            }`}
+                          >
+                            <div className="flex items-center space-x-2.5">
+                              <span className="text-xl shrink-0">{p.avatar_url || (p.species === "CANINE" ? "🐕" : "🐈")}</span>
+                              <div>
+                                <div className="flex items-center space-x-1.5">
+                                  <span className="font-bold text-xs text-slate-900">{p.name}</span>
+                                  <span className="text-[10px] text-slate-400">({p.breed})</span>
+                                </div>
+                                <span className="text-[10px] text-slate-500 block">
+                                  Tutor: {petTutor?.name.split(" ")[0]} • {p.current_weight_kg || "?"} kg
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center space-x-1.5 shrink-0">
+                              {petExCount > 0 && (
+                                <span className="text-[10px] bg-purple-50 text-purple-700 font-semibold px-2 py-0.5 rounded-full border border-purple-200">
+                                  {petExCount} {petExCount === 1 ? "laudo" : "laudos"}
+                                </span>
+                              )}
+                              {isSelected && <Check className="w-4 h-4 text-emerald-600 shrink-0" />}
+                            </div>
+                          </button>
+                        );
+                      })
+                    )}
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
           )}
         </div>
+
 
         {/* MODO ADMINISTRADOR (CENSO EPIDEMIOLÓGICO & DEFICIÊNCIAS) */}
         {viewMode === "ADMIN" ? (
@@ -738,86 +764,89 @@ export default function Home() {
             />
 
             {/* Barra de Ações Rápidas do Profissional */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 mb-4 sm:mb-6">
               {/* Abas Clínicas */}
-              <div className="flex items-center space-x-2 border-b sm:border-b-0 border-slate-200 overflow-x-auto pb-1">
+              <div className="flex items-center space-x-1.5 sm:space-x-2 border-b lg:border-b-0 border-slate-200 overflow-x-auto scrollbar-none touch-scroll pb-2 lg:pb-0 w-full lg:w-auto">
                 <button
                   onClick={() => setActiveTab("EVOLUTION")}
-                  className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center space-x-1.5 transition-all whitespace-nowrap ${
+                  className={`px-3 sm:px-3.5 py-2 rounded-xl text-xs font-bold flex items-center space-x-1.5 transition-all whitespace-nowrap min-h-[38px] ${
                     activeTab === "EVOLUTION"
                       ? "bg-emerald-600 text-white shadow-xs"
                       : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
                   }`}
                 >
-                  <Activity className="w-3.5 h-3.5" />
-                  <span>Prontuário & Curva Ponderal</span>
+                  <Activity className="w-3.5 h-3.5 shrink-0" />
+                  <span className="inline sm:hidden">Prontuário</span>
+                  <span className="hidden sm:inline">Prontuário & Curva Ponderal</span>
                 </button>
 
                 <button
                   onClick={() => setActiveTab("CALCULATOR")}
-                  className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center space-x-1.5 transition-all whitespace-nowrap ${
+                  className={`px-3 sm:px-3.5 py-2 rounded-xl text-xs font-bold flex items-center space-x-1.5 transition-all whitespace-nowrap min-h-[38px] ${
                     activeTab === "CALCULATOR"
                       ? "bg-emerald-600 text-white shadow-xs"
                       : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
                   }`}
                 >
-                  <Calculator className="w-3.5 h-3.5" />
-                  <span>Calculadora (NRC / WSAVA)</span>
+                  <Calculator className="w-3.5 h-3.5 shrink-0" />
+                  <span className="inline sm:hidden">Calculadora</span>
+                  <span className="hidden sm:inline">Calculadora (NRC / WSAVA)</span>
                 </button>
 
                 <button
                   onClick={() => setActiveTab("DIET")}
-                  className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center space-x-1.5 transition-all whitespace-nowrap ${
+                  className={`px-3 sm:px-3.5 py-2 rounded-xl text-xs font-bold flex items-center space-x-1.5 transition-all whitespace-nowrap min-h-[38px] ${
                     activeTab === "DIET"
                       ? "bg-emerald-600 text-white shadow-xs"
                       : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
                   }`}
                 >
-                  <Utensils className="w-3.5 h-3.5" />
+                  <Utensils className="w-3.5 h-3.5 shrink-0" />
                   <span>Plano Alimentar</span>
                 </button>
 
                 <button
                   onClick={() => setActiveTab("EXAMS")}
-                  className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center space-x-1.5 transition-all whitespace-nowrap ${
+                  className={`px-3 sm:px-3.5 py-2 rounded-xl text-xs font-bold flex items-center space-x-1.5 transition-all whitespace-nowrap min-h-[38px] ${
                     activeTab === "EXAMS"
                       ? "bg-emerald-600 text-white shadow-xs"
                       : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
                   }`}
                 >
-                  <FileText className="w-3.5 h-3.5" />
+                  <FileText className="w-3.5 h-3.5 shrink-0" />
                   <span>Exames & IA</span>
                 </button>
               </div>
 
               {/* Botões de Ação Clínica */}
-              <div className="flex items-center space-x-2">
+              <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full lg:w-auto">
                 <button
                   onClick={() => setIsBatchUploadModalOpen(true)}
-                  className="px-3.5 py-2 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-xl text-xs font-bold flex items-center space-x-1.5 transition-colors shadow-2xs"
+                  className="px-3 sm:px-3.5 py-2 bg-white hover:bg-slate-100 active:bg-slate-200 text-slate-700 border border-slate-200 rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 transition-colors shadow-2xs min-h-[40px]"
                   title="Upload em lote de múltiplos laudos em PDF/imagem com OCR"
                 >
-                  <UploadCloud className="w-3.5 h-3.5 text-slate-500" />
-                  <span>Upload de Laudos (Lote)</span>
+                  <UploadCloud className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                  <span className="truncate">Upload Laudos</span>
                 </button>
 
                 <button
                   onClick={() => setIsReportModalOpen(true)}
-                  className="px-3.5 py-2 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-xl text-xs font-bold flex items-center space-x-1.5 transition-colors shadow-2xs"
+                  className="px-3 sm:px-3.5 py-2 bg-white hover:bg-slate-100 active:bg-slate-200 text-slate-700 border border-slate-200 rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 transition-colors shadow-2xs min-h-[40px]"
                 >
-                  <Printer className="w-3.5 h-3.5 text-slate-500" />
-                  <span>Emitir Laudo / PDF</span>
+                  <Printer className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                  <span className="truncate">Emitir Laudo</span>
                 </button>
 
                 <button
                   onClick={() => setIsAppointmentModalOpen(true)}
-                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center space-x-1.5 shadow-sm transition-colors"
+                  className="col-span-2 sm:col-span-1 px-3.5 sm:px-4 py-2 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 shadow-sm transition-colors min-h-[40px]"
                 >
-                  <PlusCircle className="w-3.5 h-3.5" />
-                  <span>Novo Atendimento / Retorno</span>
+                  <PlusCircle className="w-3.5 h-3.5 shrink-0" />
+                  <span className="truncate">Novo Atendimento</span>
                 </button>
               </div>
             </div>
+
 
             {/* Conteúdo da Aba Ativa */}
             <div>
@@ -908,10 +937,11 @@ export default function Home() {
       />
 
       {/* Rodapé Institucional */}
-      <footer className="border-t border-slate-200 bg-white py-6 mt-12 text-center text-xs text-slate-500">
+      <footer className="border-t border-slate-200 bg-white py-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] mt-12 text-center text-xs text-slate-500 px-4">
         <p>Essência Nutri Pet • Acompanhamento Nutricional Supervisionado por Médicos-Veterinários e Zootecnistas</p>
         <p className="text-[11px] text-slate-400 mt-1">Conformidade com LGPD e CFMV/CRMV • Hospedagem Segura Linux VPS Hostinger</p>
       </footer>
     </div>
   );
 }
+

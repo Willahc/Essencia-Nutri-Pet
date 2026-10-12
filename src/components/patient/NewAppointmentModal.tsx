@@ -71,19 +71,19 @@ export function NewAppointmentModal({ isOpen, onClose, patient, onSave }: NewApp
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
-      <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-200">
-        <div className="sticky top-0 bg-white px-6 py-4 border-b border-slate-200 flex items-center justify-between z-10">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-2 sm:p-4 animate-fade-in">
+      <div className="bg-white rounded-2xl sm:rounded-3xl max-w-2xl w-full max-h-[92dvh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden my-auto">
+        <div className="bg-white px-4 sm:px-6 py-3.5 sm:py-4 border-b border-slate-200 flex items-center justify-between shrink-0">
           <div>
-            <h3 className="font-bold text-slate-900 text-lg">Registrar Novo Atendimento</h3>
-            <p className="text-xs text-slate-500">Paciente: {patient.name} • Histórico Append-Only</p>
+            <h3 className="font-bold text-slate-900 text-base sm:text-lg">Registrar Novo Atendimento</h3>
+            <p className="text-[11px] sm:text-xs text-slate-500 truncate">Paciente: {patient.name} • Histórico Append-Only</p>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-xl hover:bg-slate-100 text-slate-500">
+          <button onClick={onClose} className="p-1.5 rounded-xl hover:bg-slate-100 text-slate-500 shrink-0">
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+        <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4 sm:space-y-5 overflow-y-auto touch-scroll flex-1">
           {/* Tipo de Atendimento */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             {[
@@ -163,7 +163,7 @@ export function NewAppointmentModal({ isOpen, onClose, patient, onSave }: NewApp
           </div>
 
           {/* Anamnese Rápida */}
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">Apetite Relatado</label>
               <select
@@ -231,17 +231,17 @@ export function NewAppointmentModal({ isOpen, onClose, patient, onSave }: NewApp
             />
           </div>
 
-          <div className="flex items-center justify-end space-x-3 pt-4 border-t border-slate-200">
+          <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2 sm:space-x-3 pt-3 sm:pt-4 border-t border-slate-200">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100"
+              className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 text-center"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-md flex items-center space-x-1.5"
+              className="w-full sm:w-auto px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-md flex items-center justify-center space-x-1.5"
             >
               <Check className="w-4 h-4" />
               <span>Salvar Atendimento</span>

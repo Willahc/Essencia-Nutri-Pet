@@ -184,32 +184,32 @@ export function BatchExamUploadModal({
   const allExtracted = queue.length > 0 && queue.every((i) => i.status === "EXTRACTED");
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in">
-      <div className="bg-white rounded-3xl max-w-3xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in">
+      <div className="bg-white rounded-2xl sm:rounded-3xl max-w-3xl w-full max-h-[92dvh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden my-auto">
         {/* Cabeçalho */}
-        <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
-          <div className="flex items-center space-x-3">
-            <span className="p-2.5 rounded-2xl bg-emerald-100 text-emerald-800">
-              <UploadCloud className="w-5 h-5" />
+        <div className="p-4 sm:p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/70 shrink-0">
+          <div className="flex items-center space-x-2.5 sm:space-x-3">
+            <span className="p-2 sm:p-2.5 rounded-2xl bg-emerald-100 text-emerald-800 shrink-0">
+              <UploadCloud className="w-4 h-4 sm:w-5 sm:h-5" />
             </span>
             <div>
-              <h3 className="text-base font-black text-slate-900">Upload em Lote & Drag-and-Drop de Laudos</h3>
-              <p className="text-xs text-slate-500">
-                Arraste múltiplos arquivos PDF ou imagens para extração contínua por IA e vinculação automática.
+              <h3 className="text-sm sm:text-base font-black text-slate-900">Upload em Lote de Laudos</h3>
+              <p className="text-[11px] sm:text-xs text-slate-500 line-clamp-1 sm:line-clamp-none">
+                Arraste arquivos PDF ou imagens para extração por IA.
               </p>
             </div>
           </div>
 
           <button
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-slate-600 rounded-xl hover:bg-slate-100 transition-colors"
+            className="p-1.5 sm:p-2 text-slate-400 hover:text-slate-600 rounded-xl hover:bg-slate-100 transition-colors shrink-0"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Conteúdo com Scroll */}
-        <div className="p-6 overflow-y-auto space-y-6 flex-1">
+        <div className="p-4 sm:p-6 overflow-y-auto touch-scroll space-y-4 sm:space-y-6 flex-1">
           {/* Área de Drag and Drop */}
           <div
             onDragOver={handleDragOver}
@@ -269,20 +269,20 @@ export function BatchExamUploadModal({
                 {queue.map((item) => (
                   <div
                     key={item.id}
-                    className="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-between gap-3 text-xs"
+                    className="p-3 sm:p-3.5 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 sm:gap-3 text-xs"
                   >
-                    <div className="flex items-center space-x-3 truncate">
+                    <div className="flex items-center space-x-3 min-w-0">
                       <FileText className="w-5 h-5 text-slate-500 shrink-0" />
-                      <div className="truncate">
+                      <div className="min-w-0 flex-1">
                         <span className="font-bold text-slate-900 block truncate">{item.name}</span>
                         <span className="text-[10px] text-slate-400">{item.sizeFormatted}</span>
                       </div>
                     </div>
 
-                    <div className="flex items-center space-x-3 shrink-0">
+                    <div className="flex items-center justify-between sm:justify-end space-x-2 sm:space-x-3 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-200/60">
                       {/* Seletor do Paciente Vinculado */}
                       <div className="flex items-center space-x-1">
-                        <span className="text-[10px] text-slate-400">Vincular a:</span>
+                        <span className="text-[10px] text-slate-400">Pet:</span>
                         <select
                           value={item.matchedPatientId}
                           onChange={(e) => {
@@ -291,7 +291,7 @@ export function BatchExamUploadModal({
                               prev.map((i) => (i.id === item.id ? { ...i, matchedPatientId: val } : i))
                             );
                           }}
-                          className="bg-white border border-slate-200 text-slate-700 text-xs font-semibold rounded-lg px-2 py-1 focus:outline-hidden"
+                          className="bg-white border border-slate-200 text-slate-700 text-xs font-semibold rounded-lg px-2 py-1 focus:outline-hidden max-w-[130px] truncate"
                         >
                           {patients.map((p) => (
                             <option key={p.id} value={p.id}>
@@ -303,18 +303,18 @@ export function BatchExamUploadModal({
 
                       {/* Status */}
                       {item.status === "QUEUED" && (
-                        <span className="text-[10px] bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full font-semibold">
+                        <span className="text-[10px] bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full font-semibold whitespace-nowrap">
                           Na Fila
                         </span>
                       )}
                       {item.status === "PROCESSING" && (
-                        <span className="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-semibold flex items-center">
+                        <span className="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-semibold flex items-center whitespace-nowrap">
                           <Loader2 className="w-3 h-3 animate-spin mr-1" /> Extraindo
                         </span>
                       )}
                       {item.status === "EXTRACTED" && (
-                        <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold flex items-center">
-                          <CheckCircle2 className="w-3 h-3 mr-1 text-emerald-600" /> Pronto ({item.extractedResultsCount} parâm.)
+                        <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold flex items-center whitespace-nowrap">
+                          <CheckCircle2 className="w-3 h-3 mr-1 text-emerald-600" /> Pronto ({item.extractedResultsCount})
                         </span>
                       )}
 
@@ -333,19 +333,19 @@ export function BatchExamUploadModal({
         </div>
 
         {/* Rodapé */}
-        <div className="p-4 sm:p-6 border-t border-slate-100 flex items-center justify-between bg-slate-50/70">
-          <span className="text-xs text-slate-500">
+        <div className="p-3.5 sm:p-6 border-t border-slate-100 flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3 bg-slate-50/70 shrink-0">
+          <span className="text-xs text-slate-500 text-center sm:text-left">
             {allExtracted ? (
-              <strong className="text-emerald-700">✓ Todos os {queue.length} laudos foram processados pela IA!</strong>
+              <strong className="text-emerald-700">✓ Todos os {queue.length} laudos processados!</strong>
             ) : (
-              <span>Os laudos serão salvos com status "Pendente de Revisão" no prontuário.</span>
+              <span>Os laudos serão salvos com status "Pendente de Revisão".</span>
             )}
           </span>
 
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 w-full sm:w-auto">
             <button
               onClick={onClose}
-              className="px-4 py-2 border border-slate-200 bg-white hover:bg-slate-100 rounded-xl text-xs font-bold text-slate-700 transition-colors"
+              className="flex-1 sm:flex-none px-4 py-2.5 border border-slate-200 bg-white hover:bg-slate-100 rounded-xl text-xs font-bold text-slate-700 transition-colors text-center"
             >
               Cancelar
             </button>
@@ -353,13 +353,13 @@ export function BatchExamUploadModal({
             <button
               onClick={handleConfirmAndSave}
               disabled={!allExtracted}
-              className={`px-5 py-2 rounded-xl text-xs font-bold flex items-center space-x-1.5 transition-colors shadow-sm ${
+              className={`flex-1 sm:flex-none px-5 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 transition-colors shadow-sm ${
                 allExtracted
                   ? "bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer"
                   : "bg-slate-200 text-slate-400 cursor-not-allowed"
               }`}
             >
-              <span>Salvar e Vincular Laudos</span>
+              <span>Salvar Laudos</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>

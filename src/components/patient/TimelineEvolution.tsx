@@ -48,28 +48,28 @@ export function TimelineEvolution({
   const sortedExams = [...exams].sort((a, b) => new Date(a.exam_date).getTime() - new Date(b.exam_date).getTime());
 
   return (
-    <div className="bg-white rounded-3xl border border-slate-200/90 shadow-sm p-6 sm:p-8 space-y-8">
+    <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/90 shadow-sm p-4 sm:p-8 space-y-6 sm:space-y-8">
       {/* CABEÇALHO */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-slate-200">
-        <div className="flex items-center space-x-3.5">
-          <div className="w-11 h-11 rounded-2xl bg-blue-100/80 text-blue-700 flex items-center justify-center shrink-0">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 sm:pb-6 border-b border-slate-200">
+        <div className="flex items-center space-x-3 sm:space-x-3.5">
+          <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-blue-100/80 text-blue-700 flex items-center justify-center shrink-0">
             <Clock className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="font-extrabold text-slate-800 text-lg sm:text-xl">
+            <h3 className="font-extrabold text-slate-800 text-base sm:text-xl">
               Prontuário Longitudinal & Linha do Tempo
             </h3>
-            <p className="text-xs text-slate-500 mt-0.5">
+            <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5">
               Histórico Imutável (Append-Only) • Atendimentos, Laudos e Diário do Tutor
             </p>
           </div>
         </div>
 
         {/* Seletor de Sub-Abas */}
-        <div className="inline-flex bg-slate-100 p-1 rounded-xl border border-slate-200">
+        <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 overflow-x-auto scrollbar-none touch-scroll w-full sm:w-auto">
           <button
             onClick={() => setActiveSubTab("APPOINTMENTS")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+            className={`flex-1 sm:flex-none px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap min-h-[36px] ${
               activeSubTab === "APPOINTMENTS"
                 ? "bg-white text-slate-900 shadow-2xs"
                 : "text-slate-600 hover:text-slate-900"
@@ -80,43 +80,45 @@ export function TimelineEvolution({
 
           <button
             onClick={() => setActiveSubTab("BCS_PROJECTION")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 ${
+            className={`flex-1 sm:flex-none px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center space-x-1.5 whitespace-nowrap min-h-[36px] ${
               activeSubTab === "BCS_PROJECTION"
                 ? "bg-white text-slate-900 shadow-2xs"
                 : "text-slate-600 hover:text-slate-900"
             }`}
           >
-            <Scale className="w-3 h-3 text-emerald-600" />
-            <span>Escore & Projeção (ECC 1-9)</span>
+            <Scale className="w-3 h-3 text-emerald-600 shrink-0" />
+            <span className="inline sm:hidden">Escore</span>
+            <span className="hidden sm:inline">Escore & Projeção (ECC 1-9)</span>
           </button>
 
           <button
             onClick={() => setActiveSubTab("LAB_TRENDS")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 ${
+            className={`flex-1 sm:flex-none px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center space-x-1.5 whitespace-nowrap min-h-[36px] ${
               activeSubTab === "LAB_TRENDS"
                 ? "bg-white text-slate-900 shadow-2xs"
                 : "text-slate-600 hover:text-slate-900"
             }`}
           >
-            <Activity className="w-3 h-3 text-purple-600" />
-            <span>Biomarcadores ({exams.length})</span>
+            <Activity className="w-3 h-3 text-purple-600 shrink-0" />
+            <span className="inline sm:hidden">Exames ({exams.length})</span>
+            <span className="hidden sm:inline">Biomarcadores ({exams.length})</span>
           </button>
 
           <button
             onClick={() => setActiveSubTab("TUTOR_LOGS")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 ${
+            className={`flex-1 sm:flex-none px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center space-x-1.5 whitespace-nowrap min-h-[36px] ${
               activeSubTab === "TUTOR_LOGS"
                 ? "bg-white text-slate-900 shadow-2xs"
                 : "text-slate-600 hover:text-slate-900"
             }`}
           >
-            <span>Diário do Tutor ({dailyLogs.length})</span>
-            {metrics.hasRecentAlert && (
-              <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
-            )}
+            <ClipboardList className="w-3 h-3 text-teal-600 shrink-0" />
+            <span className="inline sm:hidden">Diário ({dailyLogs.length})</span>
+            <span className="hidden sm:inline">Diário Tutor ({dailyLogs.length})</span>
           </button>
         </div>
       </div>
+
 
       {/* HISTÓRICO EVOLUTIVO DE PESAGENS / CURVA PONDERAL */}
       <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5">
